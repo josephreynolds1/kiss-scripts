@@ -1,0 +1,8 @@
+# Static information about the filesystems.
+# See fstab(5) for details.
+
+# <file system> <dir> <type> <options> <dump> <pass>
+
+/dev/sda1	/boot/efi	vfat	0 2
+/dev/sda2	none	swap	sw	0 0
+/dev/sda3	/	xfs	noatime	0 1
