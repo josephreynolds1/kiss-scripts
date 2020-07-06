@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-scriptversion="1.0"
+scriptversion="1.1"
 
 ### Virtual Machine check
 
@@ -40,7 +40,7 @@ export MAKEFLAGS="-j4"
 
 ### Set version variables
 
-kissversion="1.0"
+kissversion="1.1"
 #kernelversion="5.7.1"
 firmwareversion="20200421"
 
@@ -53,7 +53,7 @@ kernelversion=${kernelversion##*.tar.xz\">}
 
 kernelversion=${kernelversion%</a>}
 
-echo "Stable kernel version from Kernel.org: $kernelversion"
+echo "Stable kernel version from Kernel.org: $latestkernel"
 
 
 ### Set download variables
@@ -72,14 +72,14 @@ cd /usr/src/kernel
 
 ### Download kernel
 
-wget "$urlkernel"
+wget $urlkernel
 
 
 ### Extract and remove downloaded kernel archive
 
-tar xvf linux-"${kernelversion}".tar.xz --directory /usr/src/kernel/
+tar xvf linux-${kernelversion}.tar.xz --directory /usr/src/kernel/
 
-rm -rf linux-"${kernelversion}".tar.xz
+rm -rf linux-${kernelversion}.tar.xz
 
 
 ### Create firmware directories
@@ -113,7 +113,7 @@ fi
 
 ### Change to kernel source directory
 
-cd /usr/src/kernel/linux-"${kernelversion}"
+cd /usr/src/kernel/linux-${kernelversion}
 
 
 ### Download kernel GCC 10 fix patch
@@ -158,11 +158,14 @@ make install
 
 ### Rename kernel files
 
-mv /boot/vmlinuz /boot/vmlinuz-"${kernelversion}"
-mv /boot/System.map /boot/System.map-"${kernelversion}"
+mv /boot/vmlinuz /boot/vmlinuz-${kernelversion}
+mv /boot/System.map /boot/System.map-${kernelversion}
 
 
 ### Build/Install efibootmgr
+
+#echo | kiss b grub efibootmgr
+#kiss i grub efibootmgr
 
 for pkg in grub efibootmgr; do
   echo | kiss build $pkg
@@ -189,8 +192,13 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 ### Build/install baseinit
 
-echo | kiss build baseinit
-kiss install baseinit
+#echo -ne '\n' | kiss b baseinit
+#echo -ne '\n' | kiss i baseinit
+
+for pkg in baseinit; do
+  echo | kiss build $pkg
+  kiss install $pkg
+done
 
 
 ### Configure fstab
@@ -209,6 +217,7 @@ wget -P /etc $urlinstallfiles/profile
 
 ### Update kiss
 
+#echo -ne '\n' | kiss update
 echo | kiss update
 
 ### Configure timezone to EST
@@ -251,3 +260,4 @@ passwd root
 ### Unmount efi partition
 
 umount /boot/efi
+

@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-scriptversion="1.0"
+scriptversion="1.1"
 
 ### Virtual Machine check
 
@@ -40,9 +40,13 @@ export MAKEFLAGS="-j4"
 
 ### Build/install gpg
 
-echo | kiss build gnupg1
-kiss install gnupg1
+#echo -ne '\n' | kiss b gnupg1
+#echo -ne '\n' | kiss i gnupg1
 
+for pkg in gnupg1; do
+  echo | kiss build $pkg
+  kiss install $pkg
+done
 
 ### Add/configure kiss repo key
 
@@ -55,16 +59,27 @@ git config merge.verifySignatures true
 
 ### Update kiss
 
+#echo -ne '\n' | kiss update
+
+#echo -ne '\n' | kiss update
+
 echo | kiss update
 echo | kiss update
 
 
 ### Recompile installed apps
 
-echo | kiss build "$(ls /var/db/kiss/installed)"
+#cd /var/db/kiss/installed
+
+#echo -ne '\n' | kiss build *
+
+echo | kiss build $(ls /var/db/kiss/installed)
 
 
 ### Build/Install base apps
+
+#echo -ne '\n' | kiss b e2fsprogs dosfstools util-linux eudev dhcpcd libelf ncurses perl tzdata acpid openssh sudo
+#echo -ne '\n' | kiss i e2fsprogs dosfstools util-linux eudev dhcpcd libelf ncurses perl tzdata acpid openssh sudo
 
 for pkg in e2fsprogs dosfstools util-linux eudev dhcpcd libelf ncurses perl tzdata acpid openssh sudo; do
   echo | kiss build $pkg
@@ -76,9 +91,16 @@ if [ "$IsVM" != "true" ]
 
 then
 
-echo | kiss build wpa_supplicant
-kiss install wpa_supplicant
+    #echo -ne '\n' | kiss b wpa_supplicant
+    #echo -ne '\n' | kiss i wpa_supplicant
+
+
+   for pkg in wpa_supplicant; do
+   echo | kiss build $pkg
+   kiss install $pkg
+   done
 
 fi
 
 cd /root
+
