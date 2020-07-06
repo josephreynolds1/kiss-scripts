@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+scriptversion="1.0"
+
 ### Virtual Machine check
 
 Make=$(cat /sys/class/dmi/id/sys_vendor 2> /dev/null) 

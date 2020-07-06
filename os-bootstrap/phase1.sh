@@ -1,6 +1,8 @@
 #!/bin/sh -e
 
-### Set version variables
+scriptversion="1.0"
+
+### Set Kiss version variables
 
 kisschrootversion="1.11.0"
 kissversion="1.0"
