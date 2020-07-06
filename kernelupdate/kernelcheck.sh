@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+scriptversion="1.0"
+
 ### Get current kernel version
 
 installedkernel=$(uname -r)
