@@ -35,7 +35,7 @@ fi
 
 export CFLAGS="-O3 -pipe -march=native"
 export CXXFLAGS="-O3 -pipe -march=native"
-export MAKEFLAGS="-j4"
+export MAKEFLAGS="-j$(nproc)"
 
 
 ### Build/install gpg
