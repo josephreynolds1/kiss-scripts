@@ -60,7 +60,7 @@ echo "Stable kernel version from Kernel.org: $latestkernel"
 
 urlkernel="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${kernelversion}.tar.xz"
 urlfirmware="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/linux-firmware-${firmwareversion}.tar.gz"
-urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/files"
+urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
 
 
 ### Create root kernel source directory
@@ -164,9 +164,6 @@ mv /boot/System.map /boot/System.map-${kernelversion}
 
 ### Build/Install efibootmgr
 
-#echo | kiss b grub efibootmgr
-#kiss i grub efibootmgr
-
 for pkg in grub efibootmgr; do
   echo | kiss build $pkg
   kiss install $pkg
@@ -192,9 +189,6 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 ### Build/install baseinit
 
-#echo -ne '\n' | kiss b baseinit
-#echo -ne '\n' | kiss i baseinit
-
 for pkg in baseinit; do
   echo | kiss build $pkg
   kiss install $pkg
@@ -217,8 +211,8 @@ wget -P /etc $urlinstallfiles/profile
 
 ### Update kiss
 
-#echo -ne '\n' | kiss update
 echo | kiss update
+
 
 ### Configure timezone to EST
 

@@ -4,7 +4,7 @@ scriptversion="1.1"
 
 ### Set version variables
 
-kisschrootversion="1.11.0"
+kisschrootversion="1.11.1"
 kissversion="1.1"
 
 ### Set download variables
@@ -12,7 +12,7 @@ kissversion="1.1"
 kisschrooturl="https://github.com/kisslinux/repo/releases/download/$kisschrootversion"
 urlkisschrootscript="https://raw.githubusercontent.com/kisslinux/kiss/master/contrib/"
 urlinstallscripts="http://10.1.1.21/misc/kiss/$kissversion"
-urlinstallfiles="http://10.1.1.21/misc/kiss/$kissversion/files"
+urlinstallfiles="http://10.1.1.21/misc/kiss/$kissversion/source"
 
 
 ### Update time/date
