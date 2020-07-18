@@ -1,6 +1,12 @@
 #!/bin/sh -e
 
+### Set version variables
+
 scriptversion="1.1"
+kissversion="1.1"
+#kernelversion="5.7.1"
+firmwareversion="20200421"
+
 
 ### Virtual Machine check
 
@@ -36,13 +42,6 @@ fi
 export CFLAGS="-O3 -pipe -march=native"
 export CXXFLAGS="-O3 -pipe -march=native"
 export MAKEFLAGS="-j$(nproc)"
-
-
-### Set version variables
-
-kissversion="1.1"
-#kernelversion="5.7.1"
-firmwareversion="20200421"
 
 
 ### Get latest kernel.org stable version
@@ -254,4 +253,3 @@ passwd root
 ### Unmount efi partition
 
 umount /boot/efi
-
