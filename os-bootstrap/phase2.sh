@@ -1,6 +1,9 @@
 #!/bin/sh -e
 
+### Set version variables
+
 scriptversion="1.1"
+
 
 ### Virtual Machine check
 
@@ -86,4 +89,3 @@ then
 fi
 
 cd /root
-

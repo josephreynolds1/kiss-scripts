@@ -1,6 +1,13 @@
 #!/bin/sh -e
 
+### Set version variables
+
 scriptversion="1.1"
+kissversion="1.1"
+
+### Set download variables
+
+urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
 
 
 ### Virtual Machine check
@@ -30,16 +37,6 @@ else
    IsVM="false"
 
 fi
-
-
-### Set version variables
-
-kissversion="1.1"
-
-
-### Set download variables
-
-urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
 
 
 ### Update Kiss
@@ -153,4 +150,3 @@ addgroup user video
 addgroup user audio
 addgroup user input
 addgroup user wheel
-

@@ -1,11 +1,11 @@
 #!/bin/sh -e
 
-scriptversion="1.1"
-
 ### Set version variables
 
+scriptversion="1.1"
 kisschrootversion="1.11.1"
 kissversion="1.1"
+
 
 ### Set download variables
 
@@ -79,4 +79,3 @@ wget -P /mnt/kiss/tmp $urlinstallscripts/phase3.sh
 wget -P /mnt/kiss/tmp $urlinstallscripts/phase4.sh
 
 ./kiss-chroot /mnt/kiss
-
