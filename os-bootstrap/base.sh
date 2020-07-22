@@ -191,4 +191,13 @@ echo
 
 ### Call phase1.sh
 
+echo "Would you like to to phase1.sh (y/n)? "
+
+read -r answer
+
+if [ "$answer" != "${answer#[Nn]}" ] ;then
+    exit 0
+fi
+
 #sh ./phase1.sh
+
