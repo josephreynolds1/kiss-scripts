@@ -13,16 +13,26 @@ export dirscript=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 export dirdownload="${dirscript}/source/download"
 
 
-#kernelversion="5.7.1"
+export kernelversion=""
 export firmwareversion="20200421"
 
 ### Get latest kernel.org stable version
 
-kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
+if [ -z "$kernelversion" ]; then
+    
+    echo "kernelversion is not set getting latest kernel version from kernel.org"
 
-kernelversion=${kernelversion##*.tar.xz\">}
+    kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
 
-kernelversion=${kernelversion%</a>}
+    kernelversion=${kernelversion##*.tar.xz\">}
+
+    export kernelversion=${kernelversion%</a>}
+
+else
+
+    echo "$kernelversion is set"
+
+fi
 
 
 ### Set download variables
