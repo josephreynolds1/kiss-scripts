@@ -120,7 +120,7 @@ urlTest()
 downloadSource()
 {
 
-    wget -P "$1" "$2" -q --show-progress || scriptFail "Failed to download: $2"
+    wget -P "$1" "$2" || scriptFail "Failed to download: $2"
 
 }
 
