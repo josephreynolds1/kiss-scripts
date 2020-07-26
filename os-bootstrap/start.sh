@@ -6,33 +6,35 @@ export scriptversion="1.2"
 export kisschrootversion="1.11.1"
 export kissversion="1.1"
 
-
-### Folder variables
+### Set folder variables
 
 export dirscript=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 export dirdownload="${dirscript}/source/download"
+export dirchroot="/mnt/kiss"
 
+
+### Set Kernel/Firmware variables
 
 export kernelversion=""
 export firmwareversion="20200421"
 
-### Get latest kernel.org stable version
+    ### Get latest kernel.org stable version
 
-if [ -z "$kernelversion" ]; then
-    
-    echo "kernelversion is not set getting latest kernel version from kernel.org"
+    if [ -z "$kernelversion" ]; then
+        
+        echo "kernelversion is not set getting latest kernel version from kernel.org"
 
-    kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
+        kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
 
-    kernelversion=${kernelversion##*.tar.xz\">}
+        kernelversion=${kernelversion##*.tar.xz\">}
 
-    export kernelversion=${kernelversion%</a>}
+        export kernelversion=${kernelversion%</a>}
 
-else
+    else
 
-    echo "$kernelversion is set"
+        echo "$kernelversion is set"
 
-fi
+    fi
 
 
 ### Set download variables
@@ -62,21 +64,21 @@ export MAKEFLAGS="-j${cpucount}"
 # Emit a warning to tty
 printWarning()
 {
-    echo '\e[1m\e[93m[WARNING]\e[0m '
+    echo -e '\e[1m\e[93m[WARNING]\e[0m '
     echo "$@"
 }
 
 # Emit an error to tty
 printError()
 {
-    echo '\e[1m\e[91m[ERROR]\e[0m '
+    echo -e '\e[1m\e[91m[ERROR]\e[0m '
     echo "$@"
 }
 
 # Emit info to tty
 printInfo()
 {
-    echo '\e[1m\e[94m[INFO]\e[0m '
+    echo -e '\e[1m\e[94m[INFO]\e[0m '
     echo "$@"
 }
 
@@ -141,7 +143,14 @@ echo "##########################################################################
 echo "Checking for required tools"
 echo
 
-requiredTools wget sha256sum gpg sfdisk mkfs.fat mkfs.xfs mkswap tar gzip
+requiredTools wget sha256sum gpg sfdisk mkfs.fat mkfs.xfs mkswap tar gzip lsblk ntpdate
+
+echo
+echo "#############################################################################"
+echo "Setting date/time with ntpdate"
+echo
+
+ntpdate 0.pool.ntp.org
 
 echo
 echo "#############################################################################"
@@ -185,13 +194,42 @@ echo "Downloading Kiss chroot script"
 echo
 
     downloadSource "$dirdownload" "${urlkisschrootscript}/kiss-chroot"
+    chmod +x "$dirdownload/kiss-chroot"
+
+echo
+echo "Validating Kiss chroot files"
+echo
+
+sha256sum -c < "$dirdownload/kiss-chroot.tar.xz.sha256"
+gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
+gpg --verify "$dirdownload/kiss-chroot.tar.xz.asc" "$dirdownload/kiss-chroot.tar.xz"
+
+
+### Partition/format disk and enter chroot
+
+echo
+echo "#############################################################################"
+echo "Choose disk for install"
+echo
+
+disksdev=$(lsblk -d -o NAME,SIZE | awk '{if (NR!=1) {print $1}}' )
+
+lsblk -d
 
 echo
 
+i=1
 
-### Call phase1.sh
+for disk in $disksdev; do
 
-echo "Would you like to to phase1.sh (y/n)? "
+    echo "$i: $disk"
+    
+    i=$((i + 1))
+
+done
+
+echo
+echo "Which disk would you like to install Kiss to? "
 
 read -r answer
 
@@ -199,5 +237,65 @@ if [ "$answer" != "${answer#[Nn]}" ] ;then
     exit 0
 fi
 
-#sh ./phase1.sh
+echo
+echo "Would you like to partition/format /dev/$disk (y/n)? "
 
+read -r answer
+
+if [ "$answer" != "${answer#[Nn]}" ] ;then
+    exit 0
+fi
+
+echo
+echo "Create Partitions"
+echo
+#wget "$urlinstallfiles/sda.sfdisk"
+
+sfdisk /dev/sda1 < sda.sdfdisk
+
+echo
+echo "Format Partitions"
+echo
+
+mkfs.fat -F32 /dev/sda1
+mkswap /dev/sda2
+mkfs.xfs /dev/sda3
+
+echo
+echo "Enable swap space"
+echo
+
+swapon /dev/sda2
+
+echo
+echo "Mount root partition to /mnt/kiss"
+echo
+
+mkdir "$dirchroot"
+mount /dev/sda3 "$dirchroot"
+
+echo
+echo "Would you like to enter chroot (y/n)? "
+
+read -r answer
+
+if [ "$answer" != "${answer#[Nn]}" ] ;then
+    exit 0
+fi
+
+echo
+echo "Extract root filesystem and chroot into ${dirchroot}"
+echo
+
+tar xvf kiss-chroot.tar.xz -C /mnt/kiss --strip-components 1
+
+downloadSource "$dirchroot" "${urlkisschrootscript}/phase1.sh"
+downloadSource "$dirchroot" "${urlkisschrootscript}/phase2.sh"
+
+cp -R
+
+echo
+echo "Executing kiss-chroot script"
+echo
+
+"$dirdownload/kiss-chroot" "$dirchroot"

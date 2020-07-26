@@ -2,7 +2,12 @@
 
 ### Set version variables
 
-scriptversion="1.1"
+export scriptversion="1.2"
+export kissversion="1.1"
+
+### Set download variables
+
+export urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
 
 
 ### Virtual Machine check
@@ -15,7 +20,7 @@ then
 
    echo "Machine is a VM - $Make"
 
-   IsVM="true"
+   export IsVM="true"
 
 elif [ "$Make" = "VMware" ]
 
@@ -23,69 +28,125 @@ then
 
    echo "Machine is a VM - $Make"
 
-   IsVM="true"
+   export IsVM="true"
 
 else
 
    echo "Machine is not a VM - $Make"
 
-   IsVM="false"
+   export IsVM="false"
 
 fi
 
 
-### Set compile flags
+### Update Kiss
 
-export CFLAGS="-O3 -pipe -march=native"
-export CXXFLAGS="-O3 -pipe -march=native"
-export MAKEFLAGS="-j$(nproc)"
+echo | kiss update
 
 
-### Build/install gpg
+### Build/Install xorg base
 
-for pkg in gnupg1; do
+for pkg in xorg-server xinit xinput libinput; do
   echo | kiss build $pkg
   kiss install $pkg
 done
 
 
-### Add/configure kiss repo key
-
-gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
-echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
-
-cd /var/db/kiss/repo
-git config merge.verifySignatures true
-
-
-### Update kiss
-
-echo | kiss update
-echo | kiss update
-
-
-### Recompile installed apps
-
-echo | kiss build $(ls /var/db/kiss/installed)
-
-
-### Build/Install base apps
-
-for pkg in e2fsprogs dosfstools util-linux eudev dhcpcd libelf ncurses perl tzdata acpid openssh sudo; do
-  echo | kiss build $pkg
-  kiss install $pkg
-done
-
+### Build/Install xorg drivers
 
 if [ "$IsVM" != "true" ]
 
 then
 
-   for pkg in wpa_supplicant; do
-   echo | kiss build $pkg
-   kiss install $pkg
-   done
+    for pkg in xf86-video-amdgpu xf86-video-intel xf86-video-nouveau xf86-video-vesa xf86-input-libinput; do
+      echo | kiss build $pkg
+      kiss install $pkg
+    done
+
+else
+
+    for pkg in xf86-video-vesa xf86-input-libinput; do
+      echo | kiss build $pkg
+      kiss install $pkg
+    done
 
 fi
 
-cd /root
+
+### Build/Install xorg utils
+
+for pkg in xset xsetroot xclip fontconfig xrandr; do
+  echo | kiss build $pkg
+  kiss install $pkg
+done
+
+
+### Build/Install xorg fonts
+
+for pkg in liberation-fonts terminus-font; do
+  echo | kiss build $pkg
+  kiss install $pkg
+done
+
+
+### Build/Install xorg drivers
+
+if [ $IsVM != "true" ]
+then
+
+    for pkg in alsa-lib alsa-utils mesa libdrm intel-vaapi-driver mpv gstreamer gst-plugins gst-plugins-base; do
+      echo | kiss build $pkg
+      kiss install $pkg
+    done
+
+fi
+
+
+### Build/Install bash
+
+echo | kiss b bash
+kiss i bash
+
+
+### Build/Install window manager
+
+for pkg in dwm dmenu slock rxvt-unicode; do
+  echo | kiss build $pkg
+  kiss install $pkg
+done
+
+
+### Build/Install community misc
+
+for pkg in htop pfetch imagemagick sxiv ranger w3m xfsprogs; do
+  echo | kiss build $pkg
+  kiss install $pkg
+done
+
+
+### Install firefox-bin
+
+for pkg in firefox-bin; do
+  echo | kiss build $pkg
+  kiss install $pkg
+done
+
+
+### Download/extract dotfiles
+
+wget -P /tmp $urlinstallfiles/dotfiles.tar.gz
+
+tar -xvzf /tmp/dotfiles.tar.gz -C /
+
+
+### Add default user
+
+adduser -k /etc/skel -s /bin/bash user
+
+
+### Add default user to groups
+
+addgroup user video
+addgroup user audio
+addgroup user input
+addgroup user wheel
