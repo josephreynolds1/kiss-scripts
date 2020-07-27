@@ -18,23 +18,23 @@ export dirchroot="/mnt/kiss"
 export kernelversion=""
 export firmwareversion="20200421"
 
-    ### Get latest kernel.org stable version
+### Get latest kernel.org stable version
 
-    if [ -z "$kernelversion" ]; then
-        
-        echo "kernelversion is not set getting latest kernel version from kernel.org"
-
-        kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
-
-        kernelversion=${kernelversion##*.tar.xz\">}
-
-        export kernelversion=${kernelversion%</a>}
-
-    else
-
-        echo "$kernelversion is set"
-
-    fi
+if [ -z "$kernelversion" ]; then
+    
+    echo "kernelversion is not set getting latest kernel version from kernel.org"
+    
+    kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
+    
+    kernelversion=${kernelversion##*.tar.xz\">}
+    
+    export kernelversion=${kernelversion%</a>}
+    
+else
+    
+    echo "$kernelversion is set"
+    
+fi
 
 
 ### Set download variables
@@ -93,14 +93,14 @@ scriptFail()
 requiredTools()
 {
     for tool in "$@" ; do
-
-       if which "${tool}" >/dev/null 2>&1; then
+        
+        if which "${tool}" >/dev/null 2>&1; then
             echo "${tool} : OK"
-       else
+        else
             echo "${tool} : Missing"
             exit 1
-       fi
-    
+        fi
+        
     done
 }
 
@@ -108,7 +108,7 @@ requiredTools()
 urlTest()
 {
     echo "testing $1"
-
+    
     if curl -fsS "$1" >/dev/null; then
         echo "$1 is accessible"
         #printf "%s\n $1 is accessible"
@@ -116,14 +116,14 @@ urlTest()
         echo "$1 is inacessible"
         #printf "%s\n $1 is inaccessible"
     fi
-
+    
 }
 
 downloadSource()
 {
-
+    
     wget -P "$1" "$2" || scriptFail "Failed to download: $2"
-
+    
 }
 
 
@@ -177,24 +177,24 @@ echo
 echo "Downloading kernel version: ${kernelversion}"
 echo
 
-    downloadSource "$dirdownload" "$urlkernel"
+downloadSource "$dirdownload" "$urlkernel"
 
 echo
 echo "Downloading Kiss chroot version: ${kisschrootversion}"
 echo
-    
-    downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz"
+
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz"
 
 echo
 
-    downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.sha256"
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.sha256"
 
 echo
 echo "Downloading Kiss chroot script"
 echo
 
-    downloadSource "$dirdownload" "${urlkisschrootscript}/kiss-chroot"
-    chmod +x "$dirdownload/kiss-chroot"
+downloadSource "$dirdownload" "${urlkisschrootscript}/kiss-chroot"
+chmod +x "$dirdownload/kiss-chroot"
 
 echo
 echo "Validating Kiss chroot files"
@@ -221,11 +221,11 @@ echo
 i=1
 
 for disk in $disksdev; do
-
+    
     echo "$i: $disk"
     
     i=$((i + 1))
-
+    
 done
 
 echo

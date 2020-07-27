@@ -39,14 +39,14 @@ scriptFail()
 requiredTools()
 {
     for tool in "$@" ; do
-
-       if which "${tool}" >/dev/null 2>&1; then
+        
+        if which "${tool}" >/dev/null 2>&1; then
             echo "${tool} : OK"
-       else
+        else
             echo "${tool} : Missing"
             exit 1
-       fi
-    
+        fi
+        
     done
 }
 
@@ -54,7 +54,7 @@ requiredTools()
 urlTest()
 {
     echo "testing $1"
-
+    
     if curl -fsS "$1" >/dev/null; then
         echo "$1 is accessible"
         #printf "%s\n $1 is accessible"
@@ -62,43 +62,43 @@ urlTest()
         echo "$1 is inacessible"
         #printf "%s\n $1 is inaccessible"
     fi
-
+    
 }
 
 downloadSource()
 {
-
+    
     wget -P "$1" "$2" || scriptFail "Failed to download: $2"
-
+    
 }
 
 
 ### Virtual Machine check
 
-Make=$(cat /sys/class/dmi/id/sys_vendor 2> /dev/null) 
+Make=$(cat /sys/class/dmi/id/sys_vendor 2> /dev/null)
 
 if [ "$Make" = "QEMU" ]
 
 then
-
-   echo "Machine is a VM - $Make"
-
-   IsVM="true"
-
+    
+    echo "Machine is a VM - $Make"
+    
+    IsVM="true"
+    
 elif [ "$Make" = "VMware" ]
 
 then
-
-   echo "Machine is a VM - $Make"
-
-   IsVM="true"
-
+    
+    echo "Machine is a VM - $Make"
+    
+    IsVM="true"
+    
 else
-
-   echo "Machine is not a VM - $Make"
-
-   IsVM="false"
-
+    
+    echo "Machine is not a VM - $Make"
+    
+    IsVM="false"
+    
 fi
 
 
@@ -114,8 +114,8 @@ export MAKEFLAGS="-j${cpucount}"
 ### Build/install gpg
 
 for pkg in gnupg1; do
-  echo | kiss build $pkg
-  kiss install $pkg
+    echo | kiss build $pkg
+    kiss install $pkg
 done
 
 
@@ -142,20 +142,20 @@ echo | kiss build $(ls /var/db/kiss/installed)
 ### Build/Install base apps
 
 for pkg in e2fsprogs dosfstools util-linux eudev dhcpcd libelf ncurses perl tzdata acpid openssh sudo; do
-  echo | kiss build $pkg
-  kiss install $pkg
+    echo | kiss build $pkg
+    kiss install $pkg
 done
 
 
 if [ "$IsVM" != "true" ]
 
 then
-
-   for pkg in wpa_supplicant; do
-   echo | kiss build $pkg
-   kiss install $pkg
-   done
-
+    
+    for pkg in wpa_supplicant; do
+        echo | kiss build $pkg
+        kiss install $pkg
+    done
+    
 fi
 
 cd /root
@@ -165,23 +165,23 @@ cd /root
 export kernelversion=""
 export firmwareversion="20200421"
 
-    ### Get latest kernel.org stable version
+### Get latest kernel.org stable version
 
-    if [ -z "$kernelversion" ]; then
-        
-        echo "kernelversion is not set getting latest kernel version from kernel.org"
-
-        kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
-
-        kernelversion=${kernelversion##*.tar.xz\">}
-
-        export kernelversion=${kernelversion%</a>}
-
-    else
-
-        echo "$kernelversion is set"
-
-    fi
+if [ -z "$kernelversion" ]; then
+    
+    echo "kernelversion is not set getting latest kernel version from kernel.org"
+    
+    kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
+    
+    kernelversion=${kernelversion##*.tar.xz\">}
+    
+    export kernelversion=${kernelversion%</a>}
+    
+else
+    
+    echo "$kernelversion is set"
+    
+fi
 
 
 ### Set download variables
@@ -216,27 +216,27 @@ rm -rf linux-${kernelversion}.tar.xz
 if [ "$IsVM" != "true" ]
 
 then
-
+    
     mkdir /usr/src/firmware
     mkdir -p /usr/lib/firmware
-
+    
     cd /usr/src/firmware
-
-
+    
+    
     ### Download firmware archive
-
+    
     git clone $urlfirmware
-
-
+    
+    
     ### Extract and remove downloaded firmware archive
-
+    
     tar xvf linux-firmware-${firmwareversion}.tar.gz --directory /usr/src/firmware/
-
+    
     rm -rf linux-firmware-${firmwareversion}.tar.gz
-
-
+    
+    
     #cp -R ./path/to/driver /usr/lib/firmware
-
+    
 fi
 
 
@@ -294,8 +294,8 @@ mv /boot/System.map /boot/System.map-${kernelversion}
 ### Build/Install efibootmgr
 
 for pkg in grub efibootmgr; do
-  echo | kiss build $pkg
-  kiss install $pkg
+    echo | kiss build $pkg
+    kiss install $pkg
 done
 
 mkdir /boot/efi
@@ -319,8 +319,8 @@ grub-mkconfig -o /boot/grub/grub.cfg
 ### Build/install baseinit
 
 for pkg in baseinit; do
-  echo | kiss build $pkg
-  kiss install $pkg
+    echo | kiss build $pkg
+    kiss install $pkg
 done
 
 
