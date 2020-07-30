@@ -3,7 +3,7 @@
 ### Set version variables
 
 export scriptversion="1.2"
-export kisschrootversion="1.11.1"
+export kisschrootversion="2020.7"
 export kissversion="1.1"
 
 ### Set folder variables
