@@ -6,9 +6,20 @@ export scriptversion="1.2"
 export kisschrootversion="2020.7"
 export kissversion="1.1"
 
+
+### Misc Variables
+
+export hostname="" # set hostname if blank will be set to kiss
+export domain="" # optional set domain name
+export rootpw="" # set root password if blank you will be prompted
+export filesystem="xfs" # set root filesystem xfs,ext4,btrfs
+export diskchoice=""
+
+
 ### Set folder variables
 
 export dirscript=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+export dirsource="${dirscript}/source"
 export dirdownload="${dirscript}/source/download"
 export dirchroot="/mnt/kiss"
 
@@ -17,6 +28,7 @@ export dirchroot="/mnt/kiss"
 
 export kernelversion=""
 export firmwareversion="20200421"
+
 
 ### Get latest kernel.org stable version
 
@@ -46,10 +58,21 @@ export urlinstallscripts="http://10.1.1.21/misc/kiss/${kissversion}"
 export urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
 
 export urlkernel="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${kernelversion}.tar.xz"
-#export urlfirmware="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/linux-firmware-${firmwareversion}.tar.gz"
-export urlfirmware="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
 
-### Set compile flags
+### Set firmware download url
+
+if [ -z "$firmwareversion" ]; then
+
+    export urlfirmware="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
+
+else
+
+    export urlfirmware="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/linux-firmware-${firmwareversion}.tar.gz"
+
+fi
+
+
+### Set compile flag variables
 
 export commonflags="-O3 -pipe -march=native"
 export cpucount="nproc"
@@ -59,35 +82,31 @@ export CXXFLAGS="${commonflags}"
 export MAKEFLAGS="-j${cpucount}"
 
 
+
+
 ### Functions
 
-# Emit a warning to tty
-printWarning()
-{
-    echo -e '\e[1m\e[93m[WARNING]\e[0m '
-    echo "$@"
+log() {
+    # Print a message prettily.
+    #
+    # All messages are printed to stderr to allow the user to hide build
+    # output which is the only thing printed to stdout.
+    #
+    # The l<word> variables contain escape sequence which are defined
+    # when '$KISS_COLOR' is equal to '1'.
+    printf '%b%s %b%s%b %s\n' \
+        "$lcol" "${3:-->}" "${lclr}${2:+$lcol2}" "$1" "$lclr" "$2" >&2
 }
 
-# Emit an error to tty
-printError()
-{
-    echo -e '\e[1m\e[91m[ERROR]\e[0m '
-    echo "$@"
+war() {
+    log "$1" "$2" "${3:-WARNING}"
 }
 
-# Emit info to tty
-printInfo()
-{
-    echo -e '\e[1m\e[94m[INFO]\e[0m '
-    echo "$@"
-}
-
-# Failed to do a thing. Exit fatally.
-scriptFail()
-{
-    printError "$@"
+die() {
+    log "$1" "$2" "${3:-ERROR}"
     exit 1
 }
+
 
 # Check for required tools
 requiredTools()
@@ -119,11 +138,28 @@ urlTest()
     
 }
 
+
 downloadSource()
 {
     
     wget -P "$1" "$2" || scriptFail "Failed to download: $2"
     
+}
+
+
+contains() {
+    string="$1"
+    substring="$2"
+    if test "${string#*$substring}" != "$string"
+    then
+
+        return 0    # $substring is in $string
+
+    else
+                
+        return 1    # $substring is not in $string
+
+    fi
 }
 
 
@@ -204,41 +240,103 @@ sha256sum -c < "$dirdownload/kiss-chroot.tar.xz.sha256"
 gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
 gpg --verify "$dirdownload/kiss-chroot.tar.xz.asc" "$dirdownload/kiss-chroot.tar.xz"
 
+echo
+echo
+
+/bin/cat <<EOM >"$dirsource/profile"
+
+# Build Settings
+export CFLAGS="${commonflags}"
+export CXXFLAGS="${commonflags}"
+export MAKEFLAGS="-j${cpucount}"
+EOM
 
 ### Partition/format disk and enter chroot
 
-echo
-echo "#############################################################################"
-echo "Choose disk for install"
-echo
-
 disksdev=$(lsblk -d -o NAME,SIZE | awk '{if (NR!=1) {print $1}}' )
 
-lsblk -d
-
-echo
-
-i=1
-
-for disk in $disksdev; do
+if [ -z "$diskchoice" ]; then
     
-    echo "$i: $disk"
+    echo "Disk is not selected!"
     
-    i=$((i + 1))
+    echo
+    echo "#############################################################################"
+    echo "Choose disk for install"
+    echo
+
+    lsblk -d
+
+    echo
+
+    i=1
+
+    for disk in $disksdev; do
+        
+        echo "$i: $disk"
+        
+        i=$((i + 1))
+        
+    done
+
+    echo
+    echo "Which disk would you like to install Kiss to? "
+
+    read -r diskchoice
+
+    #echo "$diskchoice"
+
+    contains "$disksdev" "$diskchoice"
+
+    result="$?"
     
-done
+else
+    
+    echo "Disk is specified ${diskchoice}"
 
-echo
-echo "Which disk would you like to install Kiss to? "
+    contains "$disksdev" "$diskchoice"
 
-read -r answer
+    result="$?"
+    
+fi
 
-if [ "$answer" != "${answer#[Nn]}" ] ;then
-    exit 0
+
+sfdiskfile="${diskchoice}.sfdisk"
+
+
+case "$diskchoice" in
+    *nvme*)
+       diskchoicenvme="${diskchoice}p"
+    ;;
+esac
+
+if [ -z "$diskchoicenvme" ]; then
+
+/bin/cat <<EOM >"$sfdiskfile"
+label: gpt
+unit: sectors
+first-lba: 2048
+
+/dev/${diskchoice}1 : start=2048, size=1048576, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93b
+/dev/${diskchoice}2 : start=1050624, size=8388608, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
+/dev/${diskchoice}3 : start=9439232, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
+EOM
+
+else
+
+/bin/cat <<EOM >"$sfdiskfile"
+label: gpt
+unit: sectors
+first-lba: 2048
+
+/dev/${diskchoicenvme}1 : start=2048, size=1048576, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93b
+/dev/${diskchoicenvme}2 : start=1050624, size=8388608, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
+/dev/${diskchoicenvme}3 : start=9439232, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
+EOM
+
 fi
 
 echo
-echo "Would you like to partition/format /dev/$disk (y/n)? "
+echo "Would you like to partition/format /dev/$diskchoice (y/n)? "
 
 read -r answer
 
@@ -249,9 +347,8 @@ fi
 echo
 echo "Create Partitions"
 echo
-#wget "$urlinstallfiles/sda.sfdisk"
 
-sfdisk /dev/sda1 < sda.sdfdisk
+sfdisk "/dev/${diskchoice}" < "$sfdiskfile"
 
 echo
 echo "Format Partitions"
@@ -292,7 +389,7 @@ tar xvf kiss-chroot.tar.xz -C /mnt/kiss --strip-components 1
 downloadSource "$dirchroot" "${urlkisschrootscript}/phase1.sh"
 downloadSource "$dirchroot" "${urlkisschrootscript}/phase2.sh"
 
-cp -R
+#cp -R
 
 echo
 echo "Executing kiss-chroot script"
