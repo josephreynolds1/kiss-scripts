@@ -3,7 +3,7 @@
 ### Set version variables
 
 export scriptversion="1.2"
-export kisschrootversion="2020.7"
+export kisschrootversion="1.12.0"
 export kissversion="1.1"
 
 
@@ -75,7 +75,7 @@ fi
 ### Set compile flag variables
 
 export commonflags="-O3 -pipe -march=native"
-export cpucount="nproc"
+export cpucount="$(nproc)"
 
 export CFLAGS="${commonflags}"
 export CXXFLAGS="${commonflags}"
@@ -225,6 +225,12 @@ echo
 
 downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.sha256"
 
+echo 
+
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.asc"
+
+echo
+
 echo
 echo "Downloading Kiss chroot script"
 echo
@@ -244,6 +250,22 @@ echo
 echo
 
 /bin/cat <<EOM >"$dirsource/profile"
+# /etc/profile
+#
+# System wide environment and startup programs.
+
+# Set default path (/usr/sbin:/sbin:/bin included for non-KISS Linux chroots).
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin
+
+# Set default umask.
+umask 022
+
+# Load profiles from /etc/profile.d
+for file in /etc/profile.d/*.sh; do
+    [ -r "$file" ] && . "$file"
+done
+
+unset file
 
 # Build Settings
 export CFLAGS="${commonflags}"
@@ -253,7 +275,7 @@ EOM
 
 ### Partition/format disk and enter chroot
 
-disksdev=$(lsblk -d -o NAME,SIZE | awk '{if (NR!=1) {print $1}}' )
+disksdev=$(lsblk -d -e 11,1,7 -o NAME,SIZE | awk '{if (NR!=1) {print $1}}' )
 
 if [ -z "$diskchoice" ]; then
     
@@ -264,7 +286,7 @@ if [ -z "$diskchoice" ]; then
     echo "Choose disk for install"
     echo
 
-    lsblk -d
+    lsblk -d -p -e 11,1,7 -o NAME,SIZE,RM,RO,TYPE,MOUNTPOINT
 
     echo
 
@@ -311,7 +333,7 @@ esac
 
 if [ -z "$diskchoicenvme" ]; then
 
-/bin/cat <<EOM >"$sfdiskfile"
+/bin/cat <<EOM >"$dirsource/$sfdiskfile"
 label: gpt
 unit: sectors
 first-lba: 2048
@@ -323,7 +345,7 @@ EOM
 
 else
 
-/bin/cat <<EOM >"$sfdiskfile"
+/bin/cat <<EOM >"$dirsource/$sfdiskfile"
 label: gpt
 unit: sectors
 first-lba: 2048
@@ -348,28 +370,28 @@ echo
 echo "Create Partitions"
 echo
 
-sfdisk "/dev/${diskchoice}" < "$sfdiskfile"
+sfdisk "/dev/${diskchoice}" < "$dirsource/$sfdiskfile"
 
 echo
 echo "Format Partitions"
 echo
 
-mkfs.fat -F32 /dev/sda1
-mkswap /dev/sda2
-mkfs.xfs /dev/sda3
+mkfs.fat -F32 "/dev/${diskchoice}1"
+mkswap "/dev/${diskchoice}2"
+mkfs.xfs "/dev/${diskchoice}3"
 
 echo
 echo "Enable swap space"
 echo
 
-swapon /dev/sda2
+swapon "/dev/${diskchoice}2"
 
 echo
 echo "Mount root partition to /mnt/kiss"
 echo
 
 mkdir "$dirchroot"
-mount /dev/sda3 "$dirchroot"
+mount "/dev/${diskchoice}3" "$dirchroot"
 
 echo
 echo "Would you like to enter chroot (y/n)? "
@@ -384,12 +406,11 @@ echo
 echo "Extract root filesystem and chroot into ${dirchroot}"
 echo
 
-tar xvf kiss-chroot.tar.xz -C /mnt/kiss --strip-components 1
+tar xvf "$dirdownload/kiss-chroot.tar.xz" -C "$dirchroot" --strip-components 1
 
-downloadSource "$dirchroot" "${urlkisschrootscript}/phase1.sh"
-downloadSource "$dirchroot" "${urlkisschrootscript}/phase2.sh"
-
-#cp -R
+cp "${dirsource}/phase1.sh" "$dirchroot/root/"
+cp "${dirsource}/phase2.sh" "$dirchroot/root/"
+cp "${dirsource}/profile" "$dirchroot/etc/profile"
 
 echo
 echo "Executing kiss-chroot script"
