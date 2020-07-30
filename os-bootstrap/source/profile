@@ -14,8 +14,3 @@ for file in /etc/profile.d/*.sh; do
 done
 
 unset file
-
-# Build Settings
-export CFLAGS="-O3 -pipe -march=native"
-export CXXFLAGS="-O3 -pipe -march=native"
-export MAKEFLAGS="-j4"
