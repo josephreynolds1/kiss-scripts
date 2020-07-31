@@ -3,31 +3,25 @@
 ### Set version variables
 
 export scriptversion="1.2"
-export kisschrootversion="1.12.0"
 export kissversion="1.1"
 
+### User set variables
 
-### Misc Variables
-
+export kisschrootversion="1.12.0"
 export hostname="" # set hostname if blank will be set to kiss
 export domain="" # optional set domain name
 export rootpw="" # set root password if blank you will be prompted
 export filesystem="xfs" # set root filesystem xfs,ext4,btrfs
 export diskchoice=""
-
+export dirchroot="/mnt/kiss"
+export kernelversion=""
+export firmwareversion="20200421"
 
 ### Set folder variables
 
 export dirscript=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 export dirsource="${dirscript}/source"
 export dirdownload="${dirscript}/source/download"
-export dirchroot="/mnt/kiss"
-
-
-### Set Kernel/Firmware variables
-
-export kernelversion=""
-export firmwareversion="20200421"
 
 
 ### Get latest kernel.org stable version
@@ -48,6 +42,10 @@ else
     
 fi
 
+export time=$(date '+%Y-%m-%d-%H:%M')
+export lcol='\033[1;33m' 
+export lcol2='\033[1;36m' 
+export lclr='\033[m'
 
 ### Set download variables
 
@@ -160,6 +158,18 @@ contains() {
         return 1    # $substring is not in $string
 
     fi
+}
+
+decompress() {
+    case $1 in
+        *.bz2)      bzip2 -d  ;;
+        *.lzma)     lzma -dc  ;;
+        *.lz)       lzip -dc  ;;
+        *.tar)      cat       ;;
+        *.tgz|*.gz) gzip -d   ;;
+        *.xz|*.txz) xz -dcT 0 ;;
+        *.zst)      zstd -dc  ;;
+    esac < "$1"
 }
 
 
