@@ -1,4 +1,6 @@
 #!/bin/sh -e
+echo "1"
+clear
 
 ### Set version variables
 
@@ -27,24 +29,24 @@ export dirdownload="${dirscript}/source/download"
 ### Get latest kernel.org stable version
 
 if [ -z "$kernelversion" ]; then
-    
+
     echo "kernelversion is not set getting latest kernel version from kernel.org"
-    
+
     kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
-    
+
     kernelversion=${kernelversion##*.tar.xz\">}
-    
+
     export kernelversion=${kernelversion%</a>}
-    
+
 else
-    
+
     echo "$kernelversion is set"
-    
+
 fi
 
 export time=$(date '+%Y-%m-%d-%H:%M')
-export lcol='\033[1;33m' 
-export lcol2='\033[1;36m' 
+export lcol='\033[1;33m'
+export lcol2='\033[1;36m'
 export lclr='\033[m'
 
 ### Set download variables
@@ -110,14 +112,14 @@ die() {
 requiredTools()
 {
     for tool in "$@" ; do
-        
+
         if which "${tool}" >/dev/null 2>&1; then
             echo "${tool} : OK"
         else
             echo "${tool} : Missing"
-            exit 1
+            return 1
         fi
-        
+
     done
 }
 
@@ -125,7 +127,7 @@ requiredTools()
 urlTest()
 {
     echo "testing $1"
-    
+
     if curl -fsS "$1" >/dev/null; then
         echo "$1 is accessible"
         #printf "%s\n $1 is accessible"
@@ -133,15 +135,15 @@ urlTest()
         echo "$1 is inacessible"
         #printf "%s\n $1 is inaccessible"
     fi
-    
+
 }
 
 
 downloadSource()
 {
-    
+
     wget -P "$1" "$2" || scriptFail "Failed to download: $2"
-    
+
 }
 
 
@@ -154,7 +156,7 @@ contains() {
         return 0    # $substring is in $string
 
     else
-                
+
         return 1    # $substring is not in $string
 
     fi
@@ -175,33 +177,42 @@ decompress() {
 
 ### Main script body
 
-echo
-echo "#############################################################################"
-echo "Kiss Linux bootstrap version: ${scriptversion}"
-echo
-echo "Versions:"
-echo "Kiss Linux: ${kisschrootversion}"
-echo "Linux kernel: ${kernelversion}"
-echo "Linux firmware: ${firmwareversion}"
+#echo
+#echo "#############################################################################"
+#echo "Kiss Linux bootstrap version: ${scriptversion}"
+#echo
+#echo "Versions:"
+#echo "Kiss Linux: ${kisschrootversion}"
+#echo "Linux kernel: ${kernelversion}"
+#echo "Linux firmware: ${firmwareversion}"
 
-echo
-echo "#############################################################################"
-echo "Checking for required tools"
-echo
 
-requiredTools wget sha256sum gpg sfdisk mkfs.fat mkfs.xfs mkswap tar gzip lsblk ntpdate
+log "Kiss Linux bootstrap version:" "${scriptversion}"
+log "Kiss Linux Chroot:" "${kisschrootversion}"
+log "Linux kernel:" "${kernelversion}"
+log "Linux firmware:" "${firmwareversion}"
+log "Checking for required tools"
 
-echo
-echo "#############################################################################"
-echo "Setting date/time with ntpdate"
-echo
+#echo
+#echo "#############################################################################"
+#echo "Checking for required tools"
+#echo
 
-ntpdate 0.pool.ntp.org
+requiredTools wget sha256sum gpg sfdisk mkfs.fat mkfs.xfs mkswap tar gzip lsblk || die "$?" "${tool} is not installed"
 
-echo
-echo "#############################################################################"
-echo "Downloading source files"
-echo
+#echo
+##echo "#############################################################################"
+#echo "Setting date/time with ntpdate"
+#echo
+
+#ntpdate 0.pool.ntp.org
+
+#echo
+#echo "#############################################################################"
+#echo "Downloading source files"
+#echo
+
+log "Downloading source files"
 
 echo "Would you like to download the source files (y/n)? "
 
@@ -211,53 +222,68 @@ if [ "$answer" != "${answer#[Nn]}" ] ;then
     exit 0
 fi
 
-echo
-echo "Cleaning downloads directory"
-echo
+#echo
+#echo "Cleaning downloads directory"
+#echo
+
+log "Cleaning source downloads directory"
 
 rm -f "${dirdownload:?}"/*
 
-echo
-echo "Stable kernel version from Kernel.org: ${kernelversion}"
-echo
-echo "Downloading kernel version: ${kernelversion}"
-echo
+#echo
+#echo "Stable kernel version from Kernel.org: ${kernelversion}"
+#echo
+#echo "Downloading kernel version: ${kernelversion}"
+#echo
+
+log "Stable kernel version from Kernel.org:" "${kernelversion}"
+log "Downloading kernel version:" "${kernelversion}"
 
 downloadSource "$dirdownload" "$urlkernel"
 
-echo
-echo "Downloading Kiss chroot version: ${kisschrootversion}"
-echo
+#echo
+#echo "Downloading Kiss chroot version: ${kisschrootversion}"
+#echo
+
+log "Downloading Kiss-chroot version:" "${kisschrootversion}"
 
 downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz"
 
-echo
+#echo
+log "Downloading Kiss-chroot sha256 hash"
 
 downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.sha256"
 
-echo 
+#echo
+log "Downloading kiss-chroot key"
 
 downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.asc"
 
-echo
+#echo
 
-echo
-echo "Downloading Kiss chroot script"
-echo
+#echo
+#echo "Downloading Kiss chroot script"
+#echo
+
+log "Downloading Kiss chroot script"
 
 downloadSource "$dirdownload" "${urlkisschrootscript}/kiss-chroot"
 chmod +x "$dirdownload/kiss-chroot"
 
-echo
-echo "Validating Kiss chroot files"
-echo
+#echo
+#echo "Validating Kiss chroot files"
+#echo
+
+log "Validating Kiss chroot files"
 
 sha256sum -c < "$dirdownload/kiss-chroot.tar.xz.sha256"
 gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
 gpg --verify "$dirdownload/kiss-chroot.tar.xz.asc" "$dirdownload/kiss-chroot.tar.xz"
 
-echo
-echo
+#echo
+#echo
+
+log "Exporting default profile"
 
 /bin/cat <<EOM >"$dirsource/profile"
 # /etc/profile
@@ -288,26 +314,28 @@ EOM
 disksdev=$(lsblk -d -e 11,1,7 -o NAME,SIZE | awk '{if (NR!=1) {print $1}}' )
 
 if [ -z "$diskchoice" ]; then
-    
-    echo "Disk is not selected!"
-    
-    echo
-    echo "#############################################################################"
-    echo "Choose disk for install"
-    echo
+
+    log "Disk is not selected!"
+
+    #echo
+    #echo "#############################################################################"
+    #echo "Choose disk for install"
+    #echo
+
+    log "Choose disk for install"
 
     lsblk -d -p -e 11,1,7 -o NAME,SIZE,RM,RO,TYPE,MOUNTPOINT
 
-    echo
+    #echo
 
     i=1
 
     for disk in $disksdev; do
-        
+
         echo "$i: $disk"
-        
+
         i=$((i + 1))
-        
+
     done
 
     echo
@@ -320,15 +348,15 @@ if [ -z "$diskchoice" ]; then
     contains "$disksdev" "$diskchoice"
 
     result="$?"
-    
+
 else
-    
+
     echo "Disk is specified ${diskchoice}"
 
     contains "$disksdev" "$diskchoice"
 
     result="$?"
-    
+
 fi
 
 
@@ -376,29 +404,36 @@ if [ "$answer" != "${answer#[Nn]}" ] ;then
     exit 0
 fi
 
-echo
-echo "Create Partitions"
-echo
+#echo
+#echo "Create Partitions"
+#echo
+
+log "Creating partions on:" "/dev/${diskchoice}"
 
 sfdisk "/dev/${diskchoice}" < "$dirsource/$sfdiskfile"
 
-echo
-echo "Format Partitions"
-echo
+#echo
+#echo "Format Partitions"
+#echo
+
+log "Formating partions on:" "/dev/${diskchoice}"
 
 mkfs.fat -F32 "/dev/${diskchoice}1"
 mkswap "/dev/${diskchoice}2"
 mkfs.xfs "/dev/${diskchoice}3"
 
-echo
-echo "Enable swap space"
-echo
+#echo
+#echo "Enable swap space"
+#echo
+
+log "Enabling swap space on:" "/dev/${diskchoice}2"
 
 swapon "/dev/${diskchoice}2"
 
-echo
-echo "Mount root partition to /mnt/kiss"
-echo
+#echo
+#echo "Mount root partition to /mnt/kiss"
+#echo
+
 
 mkdir "$dirchroot"
 mount "/dev/${diskchoice}3" "$dirchroot"
@@ -412,9 +447,11 @@ if [ "$answer" != "${answer#[Nn]}" ] ;then
     exit 0
 fi
 
-echo
-echo "Extract root filesystem and chroot into ${dirchroot}"
-echo
+#echo
+#echo "Extract root filesystem and chroot into ${dirchroot}"
+#echo
+
+log "Extracting root filesystem to ${dirchroot}"
 
 tar xvf "$dirdownload/kiss-chroot.tar.xz" -C "$dirchroot" --strip-components 1
 
@@ -422,8 +459,10 @@ cp "${dirsource}/phase1.sh" "$dirchroot/root/"
 cp "${dirsource}/phase2.sh" "$dirchroot/root/"
 cp "${dirsource}/profile" "$dirchroot/etc/profile"
 
-echo
-echo "Executing kiss-chroot script"
-echo
+#echo
+#echo "Executing kiss-chroot script"
+#echo
+
+log "Executing kiss-chroot script"
 
 "$dirdownload/kiss-chroot" "$dirchroot"
