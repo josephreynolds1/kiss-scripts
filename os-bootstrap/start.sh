@@ -44,7 +44,9 @@ else
 
 fi
 
-export time=$(date '+%Y-%m-%d-%H:%M')
+time=$(date '+%Y-%m-%d-%H:%M')
+export time
+
 export lcol='\033[1;33m'
 export lcol2='\033[1;36m'
 export lclr='\033[m'
@@ -75,7 +77,9 @@ fi
 ### Set compile flag variables
 
 export commonflags="-O3 -pipe -march=native"
-export cpucount="$(nproc)"
+
+cpucount="$(nproc)"
+export cpucount
 
 export CFLAGS="${commonflags}"
 export CXXFLAGS="${commonflags}"
@@ -188,12 +192,25 @@ log "Checking for required tools"
 
 requiredTools wget sha256sum gpg sfdisk mkfs.fat mkfs.xfs mkswap tar gzip lsblk || die "$?" "${tool} is not installed"
 
-#echo
-##echo "#############################################################################"
-#echo "Setting date/time with ntpdate"
-#echo
 
-#ntpdate 0.pool.ntp.org
+if which ntpdate >/dev/null 2>&1; then
+
+    log "ntpdate is installed"
+
+    log "Setting date/time with ntpdate"
+
+    ntpdate 0.pool.ntp.org
+
+else
+
+    war "ntpdate" "is not installed" "$3"
+
+    war "Skipping setting date/time with ntpdate" "$3"
+
+    war "Make sure date and time are correct" "$(date)" "$3"
+
+fi
+
 
 log "Downloading source files"
 
@@ -387,3 +404,4 @@ cp "${dirsource}/profile" "$dirchroot/etc/profile"
 log "Executing kiss-chroot script"
 
 "$dirdownload/kiss-chroot" "$dirchroot" || die "$?" "Failed execution of kiss-chroot script"
+
