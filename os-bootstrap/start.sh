@@ -1,5 +1,5 @@
 #!/bin/sh -e
-echo "1"
+
 clear
 
 ### Set version variables
@@ -30,7 +30,7 @@ export dirdownload="${dirscript}/source/download"
 
 if [ -z "$kernelversion" ]; then
 
-    echo "kernelversion is not set getting latest kernel version from kernel.org"
+    #echo "kernelversion is not set getting latest kernel version from kernel.org"
 
     kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
 
@@ -116,7 +116,9 @@ requiredTools()
         if which "${tool}" >/dev/null 2>&1; then
             echo "${tool} : OK"
         else
-            echo "${tool} : Missing"
+
+            war "${tool} : Missing"
+
             return 1
         fi
 
@@ -167,6 +169,7 @@ decompress() {
         *.bz2)      bzip2 -d  ;;
         *.lzma)     lzma -dc  ;;
         *.lz)       lzip -dc  ;;
+
         *.tar)      cat       ;;
         *.tgz|*.gz) gzip -d   ;;
         *.xz|*.txz) xz -dcT 0 ;;
@@ -177,26 +180,11 @@ decompress() {
 
 ### Main script body
 
-#echo
-#echo "#############################################################################"
-#echo "Kiss Linux bootstrap version: ${scriptversion}"
-#echo
-#echo "Versions:"
-#echo "Kiss Linux: ${kisschrootversion}"
-#echo "Linux kernel: ${kernelversion}"
-#echo "Linux firmware: ${firmwareversion}"
-
-
 log "Kiss Linux bootstrap version:" "${scriptversion}"
 log "Kiss Linux Chroot:" "${kisschrootversion}"
 log "Linux kernel:" "${kernelversion}"
 log "Linux firmware:" "${firmwareversion}"
 log "Checking for required tools"
-
-#echo
-#echo "#############################################################################"
-#echo "Checking for required tools"
-#echo
 
 requiredTools wget sha256sum gpg sfdisk mkfs.fat mkfs.xfs mkswap tar gzip lsblk || die "$?" "${tool} is not installed"
 
@@ -206,11 +194,6 @@ requiredTools wget sha256sum gpg sfdisk mkfs.fat mkfs.xfs mkswap tar gzip lsblk 
 #echo
 
 #ntpdate 0.pool.ntp.org
-
-#echo
-#echo "#############################################################################"
-#echo "Downloading source files"
-#echo
 
 log "Downloading source files"
 
@@ -222,66 +205,37 @@ if [ "$answer" != "${answer#[Nn]}" ] ;then
     exit 0
 fi
 
-#echo
-#echo "Cleaning downloads directory"
-#echo
-
 log "Cleaning source downloads directory"
 
 rm -f "${dirdownload:?}"/*
 
-#echo
-#echo "Stable kernel version from Kernel.org: ${kernelversion}"
-#echo
-#echo "Downloading kernel version: ${kernelversion}"
-#echo
-
 log "Stable kernel version from Kernel.org:" "${kernelversion}"
 log "Downloading kernel version:" "${kernelversion}"
 
-downloadSource "$dirdownload" "$urlkernel"
-
-#echo
-#echo "Downloading Kiss chroot version: ${kisschrootversion}"
-#echo
+downloadSource "$dirdownload" "$urlkernel" || die "$?" "Failed to download" "$urlkernel"
 
 log "Downloading Kiss-chroot version:" "${kisschrootversion}"
 
-downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz"
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz"
 
-#echo
 log "Downloading Kiss-chroot sha256 hash"
 
-downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.sha256"
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.sha256" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz.sha256"
 
-#echo
 log "Downloading kiss-chroot key"
 
-downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.asc"
-
-#echo
-
-#echo
-#echo "Downloading Kiss chroot script"
-#echo
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.asc" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz.asc"
 
 log "Downloading Kiss chroot script"
 
-downloadSource "$dirdownload" "${urlkisschrootscript}/kiss-chroot"
+downloadSource "$dirdownload" "${urlkisschrootscript}/kiss-chroot" || die "$?" "Failed to download" "${urlkisschrootscript}/kiss-chroot"
 chmod +x "$dirdownload/kiss-chroot"
-
-#echo
-#echo "Validating Kiss chroot files"
-#echo
 
 log "Validating Kiss chroot files"
 
 sha256sum -c < "$dirdownload/kiss-chroot.tar.xz.sha256"
-gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
-gpg --verify "$dirdownload/kiss-chroot.tar.xz.asc" "$dirdownload/kiss-chroot.tar.xz"
-
-#echo
-#echo
+gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E || die "$?" "Failed to get gnupg key for kiss-chroot.tar.xz"
+gpg --verify "$dirdownload/kiss-chroot.tar.xz.asc" "$dirdownload/kiss-chroot.tar.xz" || die "$?" "Failed to verify signature of" "$dirdownload/kiss-chroot.tar.xz"
 
 log "Exporting default profile"
 
@@ -317,16 +271,9 @@ if [ -z "$diskchoice" ]; then
 
     log "Disk is not selected!"
 
-    #echo
-    #echo "#############################################################################"
-    #echo "Choose disk for install"
-    #echo
-
     log "Choose disk for install"
 
     lsblk -d -p -e 11,1,7 -o NAME,SIZE,RM,RO,TYPE,MOUNTPOINT
-
-    #echo
 
     i=1
 
@@ -342,8 +289,6 @@ if [ -z "$diskchoice" ]; then
     echo "Which disk would you like to install Kiss to? "
 
     read -r diskchoice
-
-    #echo "$diskchoice"
 
     contains "$disksdev" "$diskchoice"
 
@@ -404,39 +349,22 @@ if [ "$answer" != "${answer#[Nn]}" ] ;then
     exit 0
 fi
 
-#echo
-#echo "Create Partitions"
-#echo
-
 log "Creating partions on:" "/dev/${diskchoice}"
 
-sfdisk "/dev/${diskchoice}" < "$dirsource/$sfdiskfile"
-
-#echo
-#echo "Format Partitions"
-#echo
+sfdisk "/dev/${diskchoice}" < "$dirsource/$sfdiskfile" || die "$?" "Failed to partition /dev/${diskchoice}"
 
 log "Formating partions on:" "/dev/${diskchoice}"
 
-mkfs.fat -F32 "/dev/${diskchoice}1"
-mkswap "/dev/${diskchoice}2"
-mkfs.xfs "/dev/${diskchoice}3"
-
-#echo
-#echo "Enable swap space"
-#echo
+mkfs.fat -F32 "/dev/${diskchoice}1" || die "$?" "Failed to format boot partition:" "/dev/${diskchoice}1"
+mkswap "/dev/${diskchoice}2" || die "$?" "Failed to create swap partition:" "/dev/${diskchoice}2"
+mkfs.xfs "/dev/${diskchoice}3" || die "$?" "Failed to format root partition:" "/dev/${diskchoice}3"
 
 log "Enabling swap space on:" "/dev/${diskchoice}2"
 
-swapon "/dev/${diskchoice}2"
-
-#echo
-#echo "Mount root partition to /mnt/kiss"
-#echo
-
+swapon "/dev/${diskchoice}2" || die "$?" "Failed to enable swap"
 
 mkdir "$dirchroot"
-mount "/dev/${diskchoice}3" "$dirchroot"
+mount "/dev/${diskchoice}3" "$dirchroot" || die "$?" "Failed to mount root partition /dev/${diskchoice}3 on $dirchroot"
 
 echo
 echo "Would you like to enter chroot (y/n)? "
@@ -447,22 +375,15 @@ if [ "$answer" != "${answer#[Nn]}" ] ;then
     exit 0
 fi
 
-#echo
-#echo "Extract root filesystem and chroot into ${dirchroot}"
-#echo
-
 log "Extracting root filesystem to ${dirchroot}"
 
-tar xvf "$dirdownload/kiss-chroot.tar.xz" -C "$dirchroot" --strip-components 1
+tar xvf "$dirdownload/kiss-chroot.tar.xz" -C "$dirchroot" --strip-components 1 || die "$?" "Failed to extract kiss-chroot to $dirchroot"
 
 cp "${dirsource}/phase1.sh" "$dirchroot/root/"
 cp "${dirsource}/phase2.sh" "$dirchroot/root/"
 cp "${dirsource}/profile" "$dirchroot/etc/profile"
 
-#echo
-#echo "Executing kiss-chroot script"
-#echo
 
 log "Executing kiss-chroot script"
 
-"$dirdownload/kiss-chroot" "$dirchroot"
+"$dirdownload/kiss-chroot" "$dirchroot" || die "$?" "Failed execution of kiss-chroot script"
