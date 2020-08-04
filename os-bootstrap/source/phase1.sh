@@ -5,48 +5,91 @@
 export scriptversion="1.2"
 export kissversion="1.1"
 
+### User set variables
+
+export hostname="" # set hostname if blank will be set to kiss
+export domain="" # optional set domain name
+export rootpw="" # set root password if blank you will be prompted
+export kernelversion=""
+export firmwareversion="20200421"
+
+### Get latest kernel.org stable version
+
+if [ -z "$kernelversion" ]; then
+
+    #echo "kernelversion is not set getting latest kernel version from kernel.org"
+
+    kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
+
+    kernelversion=${kernelversion##*.tar.xz\">}
+
+    export kernelversion=${kernelversion%</a>}
+
+else
+
+    echo "$kernelversion is set"
+
+fi
+
+### Set time variable for logging
+
+time=$(date '+%Y-%m-%d-%H:%M')
+export time
+
+### Set color variables
+
+export lcol='\033[1;33m'
+export lcol2='\033[1;36m'
+export lclr='\033[m'
+
+### Set compile flag variables
+
+export commonflags="-O3 -pipe -march=native"
+export cpucount="nproc"
+
+export CFLAGS="${commonflags}"
+export CXXFLAGS="${commonflags}"
+export MAKEFLAGS="-j${cpucount}"
+
+
 ### Functions
 
-# Emit a warning to tty
-printWarning()
-{
-    echo -e '\e[1m\e[93m[WARNING]\e[0m '
-    echo "$@"
+log() {
+    # Print a message prettily.
+    #
+    # All messages are printed to stderr to allow the user to hide build
+    # output which is the only thing printed to stdout.
+    #
+    # The l<word> variables contain escape sequence which are defined
+    # when '$KISS_COLOR' is equal to '1'.
+    printf '%b%s %b%s%b %s\n' \
+        "$lcol" "${3:-->}" "${lclr}${2:+$lcol2}" "$1" "$lclr" "$2" >&2
 }
 
-# Emit an error to tty
-printError()
-{
-    echo -e '\e[1m\e[91m[ERROR]\e[0m '
-    echo "$@"
+war() {
+    log "$1" "$2" "${3:-WARNING}"
 }
 
-# Emit info to tty
-printInfo()
-{
-    echo -e '\e[1m\e[94m[INFO]\e[0m '
-    echo "$@"
-}
-
-# Failed to do a thing. Exit fatally.
-scriptFail()
-{
-    printError "$@"
+die() {
+    log "$1" "$2" "${3:-ERROR}"
     exit 1
 }
+
 
 # Check for required tools
 requiredTools()
 {
     for tool in "$@" ; do
-        
+
         if which "${tool}" >/dev/null 2>&1; then
             echo "${tool} : OK"
         else
-            echo "${tool} : Missing"
-            exit 1
+
+            war "${tool} : Missing"
+
+            return 1
         fi
-        
+
     done
 }
 
@@ -54,7 +97,7 @@ requiredTools()
 urlTest()
 {
     echo "testing $1"
-    
+
     if curl -fsS "$1" >/dev/null; then
         echo "$1 is accessible"
         #printf "%s\n $1 is accessible"
@@ -62,14 +105,44 @@ urlTest()
         echo "$1 is inacessible"
         #printf "%s\n $1 is inaccessible"
     fi
-    
+
 }
+
 
 downloadSource()
 {
-    
+
     wget -P "$1" "$2" || scriptFail "Failed to download: $2"
-    
+
+}
+
+
+contains() {
+    string="$1"
+    substring="$2"
+    if test "${string#*$substring}" != "$string"
+    then
+
+        return 0    # $substring is in $string
+
+    else
+
+        return 1    # $substring is not in $string
+
+    fi
+}
+
+decompress() {
+    case $1 in
+        *.bz2)      bzip2 -d  ;;
+        *.lzma)     lzma -dc  ;;
+        *.lz)       lzip -dc  ;;
+
+        *.tar)      cat       ;;
+        *.tgz|*.gz) gzip -d   ;;
+        *.xz|*.txz) xz -dcT 0 ;;
+        *.zst)      zstd -dc  ;;
+    esac < "$1"
 }
 
 
@@ -80,36 +153,26 @@ Make=$(cat /sys/class/dmi/id/sys_vendor 2> /dev/null)
 if [ "$Make" = "QEMU" ]
 
 then
-    
+
     echo "Machine is a VM - $Make"
-    
+
     IsVM="true"
-    
+
 elif [ "$Make" = "VMware" ]
 
 then
-    
+
     echo "Machine is a VM - $Make"
-    
+
     IsVM="true"
-    
+
 else
-    
+
     echo "Machine is not a VM - $Make"
-    
+
     IsVM="false"
-    
+
 fi
-
-
-### Set compile flags
-
-export commonflags="-O3 -pipe -march=native"
-export cpucount="nproc"
-
-export CFLAGS="${commonflags}"
-export CXXFLAGS="${commonflags}"
-export MAKEFLAGS="-j${cpucount}"
 
 ### Build/install gpg
 
@@ -150,12 +213,12 @@ done
 if [ "$IsVM" != "true" ]
 
 then
-    
+
     for pkg in wpa_supplicant; do
         echo | kiss build $pkg
         kiss install $pkg
     done
-    
+
 fi
 
 cd /root
@@ -168,19 +231,19 @@ export firmwareversion="20200421"
 ### Get latest kernel.org stable version
 
 if [ -z "$kernelversion" ]; then
-    
+
     echo "kernelversion is not set getting latest kernel version from kernel.org"
-    
+
     kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
-    
+
     kernelversion=${kernelversion##*.tar.xz\">}
-    
+
     export kernelversion=${kernelversion%</a>}
-    
+
 else
-    
+
     echo "$kernelversion is set"
-    
+
 fi
 
 
@@ -216,27 +279,27 @@ rm -rf linux-${kernelversion}.tar.xz
 if [ "$IsVM" != "true" ]
 
 then
-    
+
     mkdir /usr/src/firmware
     mkdir -p /usr/lib/firmware
-    
+
     cd /usr/src/firmware
-    
-    
+
+
     ### Download firmware archive
-    
+
     git clone $urlfirmware
-    
-    
+
+
     ### Extract and remove downloaded firmware archive
-    
+
     tar xvf linux-firmware-${firmwareversion}.tar.gz --directory /usr/src/firmware/
-    
+
     rm -rf linux-firmware-${firmwareversion}.tar.gz
-    
-    
+
+
     #cp -R ./path/to/driver /usr/lib/firmware
-    
+
 fi
 
 

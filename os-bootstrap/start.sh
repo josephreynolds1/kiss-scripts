@@ -44,8 +44,12 @@ else
 
 fi
 
+### Set time variable for logging
+
 time=$(date '+%Y-%m-%d-%H:%M')
 export time
+
+### Set color variables
 
 export lcol='\033[1;33m'
 export lcol2='\033[1;36m'
