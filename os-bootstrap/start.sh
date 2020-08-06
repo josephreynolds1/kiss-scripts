@@ -46,6 +46,7 @@ fi
 
 ### Set time variable for logging
 
+
 time=$(date '+%Y-%m-%d-%H:%M')
 export time
 
@@ -183,6 +184,15 @@ decompress() {
         *.xz|*.txz) xz -dcT 0 ;;
         *.zst)      zstd -dc  ;;
     esac < "$1"
+}
+
+cleanchroot() {
+
+umount -fV "$dirchroot" || war "$?" "Failed to unmount" "$dirchroot"
+swapoff -v "/dev/${diskchoice}2" || war "$?" "Failed to turn off swap space" "/dev/${diskchoice}2"
+
+rm -rf "$dirchroot" | war "$?" "Failed to delete" "$dirchroot"
+
 }
 
 
@@ -331,11 +341,11 @@ sfdiskfile="${diskchoice}.sfdisk"
 
 case "$diskchoice" in
     *nvme*)
-       diskchoicenvme="${diskchoice}p"
+       diskchoice="${diskchoice}p"
     ;;
 esac
 
-if [ -z "$diskchoicenvme" ]; then
+#if [ -z "$diskchoicenvme" ]; then
 
 /bin/cat <<EOM >"$dirsource/$sfdiskfile"
 label: gpt
@@ -347,19 +357,19 @@ first-lba: 2048
 /dev/${diskchoice}3 : start=9439232, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
 EOM
 
-else
+#else
 
-/bin/cat <<EOM >"$dirsource/$sfdiskfile"
-label: gpt
-unit: sectors
-first-lba: 2048
+#/bin/cat <<EOM >"$dirsource/$sfdiskfile"
+#label: gpt
+#unit: sectors
+#first-lba: 2048
 
-/dev/${diskchoicenvme}1 : start=2048, size=1048576, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93b
-/dev/${diskchoicenvme}2 : start=1050624, size=8388608, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
-/dev/${diskchoicenvme}3 : start=9439232, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
-EOM
+#/dev/${diskchoice}1 : start=2048, size=1048576, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93b
+#/dev/${diskchoice}2 : start=1050624, size=8388608, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
+#/dev/${diskchoice}3 : start=9439232, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
+#EOM
 
-fi
+#fi
 
 echo
 echo "Would you like to partition/format /dev/$diskchoice (y/n)? "
@@ -378,7 +388,7 @@ log "Formating partions on:" "/dev/${diskchoice}"
 
 mkfs.fat -F32 "/dev/${diskchoice}1" || die "$?" "Failed to format boot partition:" "/dev/${diskchoice}1"
 mkswap "/dev/${diskchoice}2" || die "$?" "Failed to create swap partition:" "/dev/${diskchoice}2"
-mkfs.xfs "/dev/${diskchoice}3" || die "$?" "Failed to format root partition:" "/dev/${diskchoice}3"
+"mkfs.${filesystem}" "/dev/${diskchoice}3" || die "$?" "Failed to format root partition with $filesystem:" "/dev/${diskchoice}3"
 
 log "Enabling swap space on:" "/dev/${diskchoice}2"
 
@@ -400,9 +410,12 @@ log "Extracting root filesystem to ${dirchroot}"
 
 tar xvf "$dirdownload/kiss-chroot.tar.xz" -C "$dirchroot" --strip-components 1 || die "$?" "Failed to extract kiss-chroot to $dirchroot"
 
-cp "${dirsource}/phase1.sh" "$dirchroot/root/"
-cp "${dirsource}/phase2.sh" "$dirchroot/root/"
-cp "${dirsource}/profile" "$dirchroot/etc/profile"
+cp "${dirsource}/phase1.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase1.sh to ${dirchroot}/root"
+cp "${dirsource}/phase2.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase2.sh to ${dirchroot}/root"
+cp "${dirsource}/profile" "$dirchroot/etc/profile" || die "$?" "Failed to copy default profile to ${dirchroot}/etc"
+
+mkdir -p "$dirchroot/usr/src/kernel" || die "$?" "Failed to create kernel source dir ${dirchroot}/usr/src/kernel"
+cp "${dirsource}/download/linux-${kernelversion}.tar.xz" "$dirchroot/usr/src/kernel/" || die "$?" "Failed to copy kernel source to ${dirchroot}/usr/src/kernel"
 
 
 log "Executing kiss-chroot script"
