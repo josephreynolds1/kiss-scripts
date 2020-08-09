@@ -11,8 +11,9 @@ export kissversion="1.1"
 
 export kisschrootversion="1.12.0"
 export hostname="" # set hostname if blank will be set to kiss
-export domain="" # optional set domain name
+export domaim="" # optional set domain name
 export rootpw="" # set root password if blank you will be prompted
+export timezone="EST"
 export filesystem="xfs" # set root filesystem xfs,ext4,btrfs
 export diskchoice=""
 export dirchroot="/mnt/kiss"
@@ -199,112 +200,46 @@ rm -rf "$dirchroot" | war "$?" "Failed to delete" "$dirchroot"
 ### Main script body
 
 log "Kiss Linux bootstrap version:" "${scriptversion}"
-log "Kiss Linux Chroot:" "${kisschrootversion}"
-log "Linux kernel:" "${kernelversion}"
-log "Linux firmware:" "${firmwareversion}"
 log "Checking for required tools"
 
-requiredTools wget sha256sum gpg sfdisk mkfs.fat mkfs.xfs mkswap tar gzip lsblk || die "$?" "${tool} is not installed"
+echo ""
+requiredTools wget sha256sum gpg sfdisk mkfs.fat mkfs.ext4 mkfs.xfs mkswap tar gzip lsblk || die "$?" "${tool} is not installed"
 
+
+### Set time with ntpdate
 
 if which ntpdate >/dev/null 2>&1; then
 
+    echo ""
     log "ntpdate is installed"
-
     log "Setting date/time with ntpdate"
 
     ntpdate 0.pool.ntp.org
 
 else
 
+    echo ""
     war "ntpdate" "is not installed" "$3"
-
     war "Skipping setting date/time with ntpdate" "$3"
-
     war "Make sure date and time are correct" "$(date)" "$3"
 
 fi
 
-
-log "Downloading source files"
-
-echo "Would you like to download the source files (y/n)? "
-
-read -r answer
-
-if [ "$answer" != "${answer#[Nn]}" ] ;then
-    exit 0
-fi
-
-log "Cleaning source downloads directory"
-
-rm -f "${dirdownload:?}"/*
-
-log "Stable kernel version from Kernel.org:" "${kernelversion}"
-log "Downloading kernel version:" "${kernelversion}"
-
-downloadSource "$dirdownload" "$urlkernel" || die "$?" "Failed to download" "$urlkernel"
-
-log "Downloading Kiss-chroot version:" "${kisschrootversion}"
-
-downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz"
-
-log "Downloading Kiss-chroot sha256 hash"
-
-downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.sha256" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz.sha256"
-
-log "Downloading kiss-chroot key"
-
-downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.asc" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz.asc"
-
-log "Downloading Kiss chroot script"
-
-downloadSource "$dirdownload" "${urlkisschrootscript}/kiss-chroot" || die "$?" "Failed to download" "${urlkisschrootscript}/kiss-chroot"
-chmod +x "$dirdownload/kiss-chroot"
-
-log "Validating Kiss chroot files"
-
-sha256sum -c < "$dirdownload/kiss-chroot.tar.xz.sha256"
-gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E || die "$?" "Failed to get gnupg key for kiss-chroot.tar.xz"
-gpg --verify "$dirdownload/kiss-chroot.tar.xz.asc" "$dirdownload/kiss-chroot.tar.xz" || die "$?" "Failed to verify signature of" "$dirdownload/kiss-chroot.tar.xz"
-
-log "Exporting default profile"
-
-/bin/cat <<EOM >"$dirsource/profile"
-# /etc/profile
-#
-# System wide environment and startup programs.
-
-# Set default path (/usr/sbin:/sbin:/bin included for non-KISS Linux chroots).
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin
-
-# Set default umask.
-umask 022
-
-# Load profiles from /etc/profile.d
-for file in /etc/profile.d/*.sh; do
-    [ -r "$file" ] && . "$file"
-done
-
-unset file
-
-# Build Settings
-export CFLAGS="${commonflags}"
-export CXXFLAGS="${commonflags}"
-export MAKEFLAGS="-j${cpucount}"
-EOM
-
-### Partition/format disk and enter chroot
+### Choose disk to install to
 
 disksdev=$(lsblk -d -e 11,1,7 -o NAME,SIZE | awk '{if (NR!=1) {print $1}}' )
 
 if [ -z "$diskchoice" ]; then
 
-    log "Disk is not selected!"
+    echo ""
+    war "Disk is not selected!"
 
     log "Choose disk for install"
+    echo ""
 
     lsblk -d -p -e 11,1,7 -o NAME,SIZE,RM,RO,TYPE,MOUNTPOINT
+
+    echo ""
 
     i=1
 
@@ -338,7 +273,6 @@ fi
 
 sfdiskfile="${diskchoice}.sfdisk"
 
-
 case "$diskchoice" in
     *nvme*)
        diskchoice="${diskchoice}p"
@@ -371,6 +305,113 @@ EOM
 
 #fi
 
+
+### Summary
+
+echo ""
+log "Hostname:" "${hostname}"
+log "Domain:" "{$domain}"
+log "Kiss Linux Chroot:" "${kisschrootversion}"
+log "Linux kernel:" "${kernelversion}"
+log "Linux firmware:" "${firmwareversion}"
+log "Install disk:" "/dev/${diskchoice}"
+log "Root filesystem:" "${filesystem}"
+log "Timezone:" "${timezone}"
+
+
+### Install Kiss choice
+
+echo ""
+echo "Proceed with installing Kiss Linux (y/n)? "
+
+read -r answer
+
+if [ "$answer" != "${answer#[Nn]}" ] ;then
+    exit 0
+fi
+
+echo ""
+log "Cleaning source downloads directory"
+
+rm -f "${dirdownload:?}"/*
+
+log "Downloading source files"
+
+echo ""
+log "Stable kernel version from Kernel.org:" "${kernelversion}"
+log "Downloading kernel version:" "${kernelversion}"
+echo ""
+downloadSource "$dirdownload" "$urlkernel" || die "$?" "Failed to download" "$urlkernel"
+
+log "Downloading Kiss-chroot version:" "${kisschrootversion}"
+echo ""
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz"
+
+log "Downloading Kiss-chroot sha256 hash"
+echo ""
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.sha256" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz.sha256"
+
+log "Downloading kiss-chroot key"
+echo ""
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.asc" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz.asc"
+
+log "Downloading Kiss chroot script"
+echo ""
+downloadSource "$dirdownload" "${urlkisschrootscript}/kiss-chroot" || die "$?" "Failed to download" "${urlkisschrootscript}/kiss-chroot"
+chmod +x "$dirdownload/kiss-chroot"
+
+log "Validating Kiss chroot files"
+echo ""
+sha256sum -c < "$dirdownload/kiss-chroot.tar.xz.sha256"
+gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E || die "$?" "Failed to get gnupg key for kiss-chroot.tar.xz"
+gpg --verify "$dirdownload/kiss-chroot.tar.xz.asc" "$dirdownload/kiss-chroot.tar.xz" || die "$?" "Failed to verify signature of" "$dirdownload/kiss-chroot.tar.xz"
+
+echo ""
+log "Exporting default profile"
+
+/bin/cat <<EOM >"$dirsource/profile"
+# /etc/profile
+#
+# System wide environment and startup programs.
+
+# Set default path (/usr/sbin:/sbin:/bin included for non-KISS Linux chroots).
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin
+
+# Set default umask.
+umask 022
+
+# Load profiles from /etc/profile.d
+for file in /etc/profile.d/*.sh; do
+    [ -r "$file" ] && . "$file"
+done
+
+unset file
+
+# Build Settings
+export CFLAGS="${commonflags}"
+export CXXFLAGS="${commonflags}"
+export MAKEFLAGS="-j${cpucount}"
+EOM
+
+#Set variables file for chroot environment
+
+echo ""
+log "Set variables file for chroot environment"
+
+/bin/cat <<EOM >"$dirsource/scriptvars"
+export hostname="${hostname}"
+export domain="${domain}"
+export timezone="${timezone}"
+export rootpw="${rootpw}"
+export filesystem="${filesystem}"
+export diskchoice="${diskchoice}"
+export kernelversion="${kernelversion}"
+export firmwareversion="${firmwareversion}"
+EOM
+
+
+### Partition/format disk and enter chroot
+
 echo
 echo "Would you like to partition/format /dev/$diskchoice (y/n)? "
 
@@ -397,6 +438,7 @@ swapon "/dev/${diskchoice}2" || die "$?" "Failed to enable swap"
 mkdir "$dirchroot"
 mount "/dev/${diskchoice}3" "$dirchroot" || die "$?" "Failed to mount root partition /dev/${diskchoice}3 on $dirchroot"
 
+
 echo
 echo "Would you like to enter chroot (y/n)? "
 
@@ -413,6 +455,7 @@ tar xvf "$dirdownload/kiss-chroot.tar.xz" -C "$dirchroot" --strip-components 1 |
 cp "${dirsource}/phase1.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase1.sh to ${dirchroot}/root"
 cp "${dirsource}/phase2.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase2.sh to ${dirchroot}/root"
 cp "${dirsource}/profile" "$dirchroot/etc/profile" || die "$?" "Failed to copy default profile to ${dirchroot}/etc"
+cp "${dirsource}/scriptvars" "$dirchroot/root/" || die "$?" "Failed to copy scriptvars to ${dirchroot}/root"
 
 mkdir -p "$dirchroot/usr/src/kernel" || die "$?" "Failed to create kernel source dir ${dirchroot}/usr/src/kernel"
 cp "${dirsource}/download/linux-${kernelversion}.tar.xz" "$dirchroot/usr/src/kernel/" || die "$?" "Failed to copy kernel source to ${dirchroot}/usr/src/kernel"
@@ -421,4 +464,5 @@ cp "${dirsource}/download/linux-${kernelversion}.tar.xz" "$dirchroot/usr/src/ker
 log "Executing kiss-chroot script"
 
 "$dirdownload/kiss-chroot" "$dirchroot" || die "$?" "Failed execution of kiss-chroot script"
+
 
