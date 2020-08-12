@@ -11,7 +11,7 @@ export kissversion="1.1"
 
 export kisschrootversion="1.12.0"
 export hostname="" # set hostname if blank will be set to kiss
-export domaim="" # optional set domain name
+export domain="" # optional set domain name
 export rootpw="" # set root password if blank you will be prompted
 export timezone="EST"
 export filesystem="xfs" # set root filesystem xfs,ext4,btrfs
@@ -398,7 +398,7 @@ EOM
 echo ""
 log "Set variables file for chroot environment"
 
-/bin/cat <<EOM >"$dirsource/scriptvars"
+/bin/cat <<EOM >"$dirsource/scriptvars.sh"
 export hostname="${hostname}"
 export domain="${domain}"
 export timezone="${timezone}"
