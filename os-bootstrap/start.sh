@@ -310,7 +310,7 @@ EOM
 
 echo ""
 log "Hostname:" "${hostname}"
-log "Domain:" "{$domain}"
+log "Domain:" "${domain}"
 log "Kiss Linux Chroot:" "${kisschrootversion}"
 log "Linux kernel:" "${kernelversion}"
 log "Linux firmware:" "${firmwareversion}"
@@ -399,6 +399,8 @@ echo ""
 log "Set variables file for chroot environment"
 
 /bin/cat <<EOM >"$dirsource/scriptvars.sh"
+#!/bin/sh
+
 export hostname="${hostname}"
 export domain="${domain}"
 export timezone="${timezone}"
@@ -429,7 +431,7 @@ log "Formating partions on:" "/dev/${diskchoice}"
 
 mkfs.fat -F32 "/dev/${diskchoice}1" || die "$?" "Failed to format boot partition:" "/dev/${diskchoice}1"
 mkswap "/dev/${diskchoice}2" || die "$?" "Failed to create swap partition:" "/dev/${diskchoice}2"
-"mkfs.${filesystem}" "/dev/${diskchoice}3" || die "$?" "Failed to format root partition with $filesystem:" "/dev/${diskchoice}3"
+"mkfs.${filesystem}" -f "/dev/${diskchoice}3" || die "$?" "Failed to format root partition with $filesystem:" "/dev/${diskchoice}3"
 
 log "Enabling swap space on:" "/dev/${diskchoice}2"
 
@@ -455,7 +457,7 @@ tar xvf "$dirdownload/kiss-chroot.tar.xz" -C "$dirchroot" --strip-components 1 |
 cp "${dirsource}/phase1.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase1.sh to ${dirchroot}/root"
 cp "${dirsource}/phase2.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase2.sh to ${dirchroot}/root"
 cp "${dirsource}/profile" "$dirchroot/etc/profile" || die "$?" "Failed to copy default profile to ${dirchroot}/etc"
-cp "${dirsource}/scriptvars" "$dirchroot/root/" || die "$?" "Failed to copy scriptvars to ${dirchroot}/root"
+cp "${dirsource}/scriptvars.sh" "$dirchroot/root/" || die "$?" "Failed to copy scriptvars to ${dirchroot}/root"
 
 mkdir -p "$dirchroot/usr/src/kernel" || die "$?" "Failed to create kernel source dir ${dirchroot}/usr/src/kernel"
 cp "${dirsource}/download/linux-${kernelversion}.tar.xz" "$dirchroot/usr/src/kernel/" || die "$?" "Failed to copy kernel source to ${dirchroot}/usr/src/kernel"
