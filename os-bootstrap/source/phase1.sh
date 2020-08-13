@@ -129,10 +129,8 @@ urlTest()
 
     if curl -fsS "$1" >/dev/null; then
         echo "$1 is accessible"
-        #printf "%s\n $1 is accessible"
     else
         echo "$1 is inacessible"
-        #printf "%s\n $1 is inaccessible"
     fi
 
 }
@@ -264,7 +262,7 @@ if [ "$IsVM" != "true" ]
 
 then
 
-    mkdir /usr/src/firmware
+    mkdir -p /usr/src/firmware
     mkdir -p /usr/lib/firmware
 
     cd /usr/src/firmware
@@ -277,9 +275,9 @@ then
 
     ### Extract and remove downloaded firmware archive
 
-    tar xvf "linux-firmware-${firmwareversion}.tar.gz" --directory /usr/src/firmware/
+    #tar xvf "linux-firmware-${firmwareversion}.tar.gz" --directory /usr/src/firmware/
 
-    rm -rf "linux-firmware-${firmwareversion}.tar.gz"
+    #rm -rf "linux-firmware-${firmwareversion}.tar.gz"
 
 
     #cp -R ./path/to/driver /usr/lib/firmware
@@ -299,7 +297,7 @@ cd "/usr/src/kernel/linux-${kernelversion}"
 
 ### Copy kernel config to kernel source directory
 
-cp .config /usr/src/kernel/config
+cp .config "/usr/src/kernel/linux-${kernelversion}/config" || die "$?" "Failed to copy default kernel config to /usr/src/kernel/${kernelversion}"
 
 
 ### Prepare config file

@@ -345,15 +345,15 @@ downloadSource "$dirdownload" "$urlkernel" || die "$?" "Failed to download" "$ur
 
 log "Downloading Kiss-chroot version:" "${kisschrootversion}"
 echo ""
-downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz"
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot-${kisschrootversion}.tar.xz" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot-${kisschrootversion}.tar.xz"
 
 log "Downloading Kiss-chroot sha256 hash"
 echo ""
-downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.sha256" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz.sha256"
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot-${kisschrootversion}.tar.xz.sha256" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot-${kisschrootversion}.tar.xz.sha256"
 
 log "Downloading kiss-chroot key"
 echo ""
-downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot.tar.xz.asc" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot.tar.xz.asc"
+downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot-${kisschrootversion}.tar.xz.asc" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot-${kisschrootversion}.tar.xz.asc"
 
 log "Downloading Kiss chroot script"
 echo ""
@@ -362,9 +362,9 @@ chmod +x "$dirdownload/kiss-chroot"
 
 log "Validating Kiss chroot files"
 echo ""
-sha256sum -c < "$dirdownload/kiss-chroot.tar.xz.sha256"
-gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E || die "$?" "Failed to get gnupg key for kiss-chroot.tar.xz"
-gpg --verify "$dirdownload/kiss-chroot.tar.xz.asc" "$dirdownload/kiss-chroot.tar.xz" || die "$?" "Failed to verify signature of" "$dirdownload/kiss-chroot.tar.xz"
+sha256sum -c < "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.sha256"
+gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E || die "$?" "Failed to get gnupg key for kiss-chroot-${kisschrootversion}.tar.xz"
+gpg --verify "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.asc" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" || die "$?" "Failed to verify signature of" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz"
 
 echo ""
 log "Exporting default profile"
@@ -452,7 +452,7 @@ fi
 
 log "Extracting root filesystem to ${dirchroot}"
 
-tar xvf "$dirdownload/kiss-chroot.tar.xz" -C "$dirchroot" --strip-components 1 || die "$?" "Failed to extract kiss-chroot to $dirchroot"
+tar xvf "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" -C "$dirchroot" --strip-components 1 || die "$?" "Failed to extract kiss-chroot to $dirchroot"
 
 cp "${dirsource}/phase1.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase1.sh to ${dirchroot}/root"
 cp "${dirsource}/phase2.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase2.sh to ${dirchroot}/root"
