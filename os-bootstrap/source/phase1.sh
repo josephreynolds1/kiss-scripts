@@ -292,7 +292,7 @@ fi
 
 ### Copy kernel config to kernel source directory
 
-cp "usr/src/kernel/linux-${kernelverison}/config" "/usr/src/kernel/linux-${kernelversion}/.config" || die "$?" "Failed to copy default kernel config to /usr/src/kernel/linux-${kernelversion}"
+cp "/usr/src/kernel/config" "/usr/src/kernel/linux-${kernelversion}/.config" || die "$?" "Failed to copy default kernel config to /usr/src/kernel/linux-${kernelversion}"
 
 
 ### Change to kernel source directory
