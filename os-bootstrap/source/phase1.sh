@@ -285,11 +285,6 @@ then
 fi
 
 
-### Change to kernel source directory
-
-cd "/usr/src/kernel/linux-${kernelversion}"
-
-
 ### Download kernel GCC 10 fix patch
 
 #wget "$urlinstallfiles/patch1.patch"
@@ -297,12 +292,17 @@ cd "/usr/src/kernel/linux-${kernelversion}"
 
 ### Copy kernel config to kernel source directory
 
-cp .config "/usr/src/kernel/linux-${kernelversion}/config" || die "$?" "Failed to copy default kernel config to /usr/src/kernel/${kernelversion}"
+cp "usr/src/kernel/linux-${kernelverison}/config" "/usr/src/kernel/linux-${kernelversion}/.config" || die "$?" "Failed to copy default kernel config to /usr/src/kernel/linux-${kernelversion}"
+
+
+### Change to kernel source directory
+
+cd "/usr/src/kernel/linux-${kernelversion}"
 
 
 ### Prepare config file
 
-make olddefconfig
+make olddefconfig || die "$?" "Failed kernel config preperation"
 
 
 ### Apply kernel patch
@@ -312,7 +312,7 @@ make olddefconfig
 
 ### Compile the kernel
 
-make -j "$(nproc)"
+make -j "$(nproc)" || die "$?" "Failed kernel compilation"
 
 
 ### Install kernel modules
