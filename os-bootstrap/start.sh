@@ -460,6 +460,7 @@ cp "${dirsource}/profile" "$dirchroot/etc/profile" || die "$?" "Failed to copy d
 cp "${dirsource}/scriptvars.sh" "$dirchroot/root/" || die "$?" "Failed to copy scriptvars to ${dirchroot}/root"
 
 mkdir -p "$dirchroot/usr/src/kernel" || die "$?" "Failed to create kernel source dir ${dirchroot}/usr/src/kernel"
+cp "${dirsource}/config" "$dirchroot/usr/src/kernel/" || die "$?" "Failed to copy kernel config to ${dirchroot}/usr/src/kernel"
 cp "${dirsource}/download/linux-${kernelversion}.tar.xz" "$dirchroot/usr/src/kernel/" || die "$?" "Failed to copy kernel source to ${dirchroot}/usr/src/kernel"
 
 
