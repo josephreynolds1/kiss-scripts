@@ -206,8 +206,8 @@ fi
 ### Build/install gpg
 
 for pkg in gnupg1; do
-    echo | kiss build "$pkg"
-    kiss install "$pkg"
+    echo | kiss build $pkg
+    kiss install $pkg
 done
 
 
@@ -234,8 +234,8 @@ echo | kiss build "$(ls /var/db/kiss/installed)"
 ### Build/Install base apps
 
 for pkg in e2fsprogs dosfstools util-linux eudev dhcpcd libelf ncurses perl tzdata acpid openssh sudo; do
-    echo | kiss build "$pkg"
-    kiss install "$pkg"
+    echo | kiss build $pkg
+    kiss install $pkg
 done
 
 
@@ -244,8 +244,8 @@ if [ "$IsVM" != "true" ]
 then
 
     for pkg in wpa_supplicant; do
-        echo | kiss build "$pkg"
-        kiss install "$pkg"
+        echo | kiss build $pkg
+        kiss install $pkg
     done
 
 fi
@@ -336,8 +336,8 @@ mv /boot/System.map "/boot/System.map-${kernelversion}"
 ### Build/Install efibootmgr
 
 for pkg in grub efibootmgr; do
-    echo | kiss build "$pkg"
-    kiss install "$pkg"
+    echo | kiss build $pkg
+    kiss install $pkg
 done
 
 mkdir /boot/efi
@@ -360,8 +360,8 @@ grub-mkconfig -o /boot/grub/grub.cfg
 ### Build/install baseinit
 
 for pkg in baseinit; do
-    echo | kiss build "$pkg"
-    kiss install "$pkg"
+    echo | kiss build $pkg
+    kiss install $pkg
 done
 
 
