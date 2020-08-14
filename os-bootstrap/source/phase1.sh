@@ -5,15 +5,11 @@
 export scriptversion="1.2"
 export kissversion="1.1"
 
-### User set variables
-
-#export hostname="" # set hostname if blank will be set to kiss
-#export domain="" # optional set domain name
-#export rootpw="" # set root password if blank you will be prompted
-#export kernelversion=""
-#export firmwareversion="20200421"
-
 source ./scriptvars.sh
+
+### Set KISS_PATH
+
+export KISS_PATH=/var/db/kiss/repo/core:/var/db/kiss/repo/extra:/var/db/kiss/repo/xorg
 
 if [ -z "$hostname" ]; then
 
@@ -36,26 +32,6 @@ if [ -z "$rootpw" ]; then
 fi
 
 
-
-
-### Get latest kernel.org stable version
-
-if [ -z "$kernelversion" ]; then
-
-    #echo "kernelversion is not set getting latest kernel version from kernel.org"
-
-    kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
-
-    kernelversion=${kernelversion##*.tar.xz\">}
-
-    export kernelversion=${kernelversion%</a>}
-
-else
-
-    echo "$kernelversion is set"
-
-fi
-
 ### Set time variable for logging
 
 time=$(date '+%Y-%m-%d-%H:%M')
@@ -69,12 +45,12 @@ export lclr='\033[m'
 
 ### Set compile flag variables
 
-export commonflags="-O3 -pipe -march=native"
-export cpucount="nproc"
+#export commonflags="-O3 -pipe -march=native"
+#export cpucount="nproc"
 
-export CFLAGS="${commonflags}"
-export CXXFLAGS="${commonflags}"
-export MAKEFLAGS="-j${cpucount}"
+#export CFLAGS="${commonflags}"
+#export CXXFLAGS="${commonflags}"
+#export MAKEFLAGS="-j${cpucount}"
 
 ### Set download variables
 
@@ -84,13 +60,7 @@ export urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
 ### Functions
 
 log() {
-    # Print a message prettily.
-    #
-    # All messages are printed to stderr to allow the user to hide build
-    # output which is the only thing printed to stdout.
-    #
-    # The l<word> variables contain escape sequence which are defined
-    # when '$KISS_COLOR' is equal to '1'.
+
     printf '%b%s %b%s%b %s\n' \
         "$lcol" "${3:-->}" "${lclr}${2:+$lcol2}" "$1" "$lclr" "$2" >&2
 }
@@ -181,7 +151,7 @@ if [ "$Make" = "QEMU" ]
 
 then
 
-    echo "Machine is a VM - $Make"
+    log "Machine is a VM" "$Make"
 
     IsVM="true"
 
@@ -189,13 +159,13 @@ elif [ "$Make" = "VMware" ]
 
 then
 
-    echo "Machine is a VM - $Make"
+    log "Machine is a VM" "$Make"
 
     IsVM="true"
 
 else
 
-    echo "Machine is not a VM - $Make"
+    log "Machine is not a VM" "$Make"
 
     IsVM="false"
 
@@ -204,12 +174,15 @@ fi
 ### Build/install gpg
 
 for pkg in gnupg1; do
+    log "Building" "$pkg"
     echo | kiss build $pkg
-    kiss install $pkg
+    log "Installing" "$pkg"
 done
 
 
 ### Add/configure kiss repo key
+
+log "Configuring kiss repo GPG key"
 
 gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
 echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
@@ -220,19 +193,27 @@ git config merge.verifySignatures true
 
 ### Update kiss
 
+log "Updating Kiss"
+
 echo | kiss update
 echo | kiss update
 
 
 ### Recompile installed apps
 
+log "Rebuilding base apps"
+
 echo | kiss build "$(ls /var/db/kiss/installed)"
 
 
 ### Build/Install base apps
 
+log "Building/Install" "gpg"
+
 for pkg in e2fsprogs dosfstools util-linux eudev dhcpcd libelf ncurses perl tzdata acpid openssh sudo; do
+    log "Building" "$pkg"
     echo | kiss build $pkg
+    log "Installing" "$pkg"
     kiss install $pkg
 done
 
@@ -242,8 +223,9 @@ if [ "$IsVM" != "true" ]
 then
 
     for pkg in wpa_supplicant; do
+        log "Building" "$pkg"
         echo | kiss build $pkg
-        kiss install $pkg
+        log "Installing" "$pkg"
     done
 
 fi
@@ -251,7 +233,11 @@ fi
 
 ### Extract and remove downloaded kernel archive
 
-tar xvf "/usr/src/kernel/linux-${kernelversion}.tar.xz" --directory /usr/src/kernel/
+log "Extracting" "linux-${kernelversion}.tar.xz"
+
+tar xvf "/usr/src/kernel/linux-${kernelversion}.tar.xz" --directory /usr/src/kernel/ || die "$?" "Failed to extract kernel archive to /usr/src/kernel"
+
+log "Removing" "linux-${kernelversion}.tar.xz"
 
 rm -rf "/usr/src/kernel/linux-${kernelversion}.tar.xz"
 
@@ -262,13 +248,20 @@ if [ "$IsVM" != "true" ]
 
 then
 
+    log "Creating linux firmware source directory" "/usr/src/firmware"
+
     mkdir -p /usr/src/firmware
+
+    log "Creating linux firmware directory" "/usr/lib/firmware"
+
     mkdir -p /usr/lib/firmware
 
     cd /usr/src/firmware
 
 
     ### Download firmware archive
+
+    log "Cloning linux firmware git repository"
 
     git clone "$urlfirmware"
 
@@ -279,6 +272,7 @@ then
 
     #rm -rf "linux-firmware-${firmwareversion}.tar.gz"
 
+    log "Copying linux firmware files" "/usr/lib/firmware"
 
     #cp -R ./path/to/driver /usr/lib/firmware
 
@@ -292,6 +286,8 @@ fi
 
 ### Copy kernel config to kernel source directory
 
+log "Copy kernel config to kernel source directory"
+
 cp "/usr/src/kernel/config" "/usr/src/kernel/linux-${kernelversion}/.config" || die "$?" "Failed to copy default kernel config to /usr/src/kernel/linux-${kernelversion}"
 
 
@@ -300,7 +296,9 @@ cp "/usr/src/kernel/config" "/usr/src/kernel/linux-${kernelversion}/.config" || 
 cd "/usr/src/kernel/linux-${kernelversion}"
 
 
-### Prepare config file
+### Prepare linux kernel configuration
+
+log "Prepare linux kernel configuration"
 
 make olddefconfig || die "$?" "Failed kernel config preperation"
 
@@ -312,83 +310,103 @@ make olddefconfig || die "$?" "Failed kernel config preperation"
 
 ### Compile the kernel
 
+log "Compiling the kernel"
+
 make -j "$(nproc)" || die "$?" "Failed kernel compilation"
 
 
 ### Install kernel modules
 
-make INSTALL_MOD_STRIP=1 modules_install
+log "Install kernel modules"
+
+make INSTALL_MOD_STRIP=1 modules_install || die "$?" "Failed to install kernel modules"
 
 
 ### Install kernel to /boot
 
-make install
+log "Installing kernel" "/boot"
+
+make install || die "$?" "Failed kernel install"
 
 
 ### Rename kernel files
 
-mv /boot/vmlinuz "/boot/vmlinuz-${kernelversion}"
-mv /boot/System.map "/boot/System.map-${kernelversion}"
+log "Renaming vmlinux to vmlinuz-${kernelversion}"
+
+mv /boot/vmlinuz "/boot/vmlinuz-${kernelversion}" || die "$?" "Failed to rename kernel image"
+
+log "Renaming System.map to System.map-${kernelversion}"
+
+mv /boot/System.map "/boot/System.map-${kernelversion}" || die "$?" "Failed to rename System.map"
 
 
 ### Build/Install efibootmgr
 
 for pkg in grub efibootmgr; do
+    log "Building" "$pkg"
     echo | kiss build $pkg
-    kiss install $pkg
+    log "Installing" "$pkg"
 done
+
+log "Creating directory" "/boot/efi"
 
 mkdir /boot/efi
 
 ### Mount efi partition to /boot/efi
+
+log "Mounting efi boot partition /dev/${diskchoice}1 to /boot/efi"
 
 mount -t vfat "/dev/${diskchoice}1" /boot/efi || die "$?" "Failed to mount boot partition /dev/${diskchoice}1 on /boot/efi"
 
 
 ### Install grub for efi
 
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Kiss
+log "Installing grub for efi" "/boot/efi"
+
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Kiss || die "$?" "Grub bootloader install failed"
 
 
 ### Generate grub config
 
-grub-mkconfig -o /boot/grub/grub.cfg
+log "Generating grub configuration" "/boot/grub/grub.cfg"
+
+grub-mkconfig -o /boot/grub/grub.cfg || die "$?" "Failed generate grub.cfg"
 
 
 ### Build/install baseinit
 
 for pkg in baseinit; do
+    log "Building" "$pkg"
     echo | kiss build $pkg
-    kiss install $pkg
+    log "Installing" "$pkg"
 done
 
 
 ### Configure fstab
 
-rm -rf /etc/fstab
+#rm -rf /etc/fstab
 
-wget -P /etc "$urlinstallfiles/fstab"
+#wget -P /etc "$urlinstallfiles/fstab"
 
 
 ### Configure default profile
 
-rm -rf /etc/profile
+#rm -rf /etc/profile
 
-wget -P /etc "$urlinstallfiles/profile"
-
-
-### Update kiss
-
-echo | kiss update
+#wget -P /etc "$urlinstallfiles/profile"
 
 
 ### Configure timezone to EST
+
+log "Setting timezone" "$timezone"
 
 rm -rf /etc/localtime
 ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 
 
 ### Enable default services
+
+log "Enabling default services"
 
 ln -s /etc/sv/dhcpcd /var/service
 ln -s /etc/sv/acpid /var/service
@@ -398,6 +416,8 @@ ln -s /etc/sv/udevd /var/service
 
 
 ### Configure KISS community repository
+
+log "Adding Kiss community repository"
 
 mkdir /usr/src/repo
 
@@ -416,7 +436,7 @@ chmod +x /etc/profile.d/kiss_path.sh
 
 ### Set root password
 
+log "Setting root password"
 
 echo "root:${rootpw}" | chpasswd
 
-### Unmount efi partition

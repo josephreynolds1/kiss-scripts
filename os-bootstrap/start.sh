@@ -412,6 +412,24 @@ export firmwareversion="${firmwareversion}"
 EOM
 
 
+#Set variables file for chroot environment
+
+echo ""
+log "Generate fstab configuration"
+
+/bin/cat <<EOM >"$dirsource/fstab"
+# Static information about the filesystems.
+# See fstab(5) for details.
+
+# <file system> <dir> <type> <options> <dump> <pass>
+
+/dev/"${diskchoice}"1	/boot/efi	vfat	0 2
+/dev/"${diskchoice}"2	none	swap	sw	0 0
+/dev/"${diskchoice}"3	/	"${filesystem}"	noatime	0 1
+
+EOM
+
+
 ### Partition/format disk and enter chroot
 
 echo
@@ -458,6 +476,7 @@ cp "${dirsource}/phase1.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase
 cp "${dirsource}/phase2.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase2.sh to ${dirchroot}/root"
 cp "${dirsource}/profile" "$dirchroot/etc/profile" || die "$?" "Failed to copy default profile to ${dirchroot}/etc"
 cp "${dirsource}/scriptvars.sh" "$dirchroot/root/" || die "$?" "Failed to copy scriptvars to ${dirchroot}/root"
+cp "${dirsource}/fstab" "$dirchroot/etc/" || die "$?" "Failed to copy fstab to ${dirchroot}/etc"
 
 mkdir -p "$dirchroot/usr/src/kernel" || die "$?" "Failed to create kernel source dir ${dirchroot}/usr/src/kernel"
 cp "${dirsource}/config" "$dirchroot/usr/src/kernel/" || die "$?" "Failed to copy kernel config to ${dirchroot}/usr/src/kernel"
