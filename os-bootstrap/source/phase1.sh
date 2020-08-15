@@ -7,9 +7,6 @@ export kissversion="1.1"
 
 source ./scriptvars.sh
 
-### Set KISS_PATH
-
-export KISS_PATH=/var/db/kiss/repo/core:/var/db/kiss/repo/extra:/var/db/kiss/repo/xorg
 
 if [ -z "$hostname" ]; then
 
@@ -45,12 +42,12 @@ export lclr='\033[m'
 
 ### Set compile flag variables
 
-#export commonflags="-O3 -pipe -march=native"
-#export cpucount="nproc"
+export commonflags="-O3 -pipe -march=native"
+export cpucount="nproc"
 
-#export CFLAGS="${commonflags}"
-#export CXXFLAGS="${commonflags}"
-#export MAKEFLAGS="-j${cpucount}"
+export CFLAGS="${commonflags}"
+export CXXFLAGS="${commonflags}"
+export MAKEFLAGS="-j${cpucount}"
 
 ### Set download variables
 
@@ -203,14 +200,15 @@ echo | kiss update
 
 log "Rebuilding base apps"
 
-echo | kiss build "$(ls /var/db/kiss/installed)"
+#echo | kiss build "$(ls /var/db/kiss/installed)"
+
+cd /var/db/kiss/installed && kiss build *
 
 
 ### Build/Install base apps
 
-log "Building/Install" "gpg"
 
-for pkg in e2fsprogs dosfstools util-linux eudev dhcpcd libelf ncurses perl tzdata acpid openssh sudo; do
+for pkg in e2fsprogs xfsprogs dosfstools util-linux eudev dhcpcd libelf ncurses perl tzdata acpid openssh sudo; do
     log "Building" "$pkg"
     echo | kiss build $pkg
     log "Installing" "$pkg"
