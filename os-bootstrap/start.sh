@@ -2,6 +2,8 @@
 
 clear
 
+### Variables #################################################################
+
 ### Set version variables
 
 export scriptversion="1.2"
@@ -92,7 +94,7 @@ export CXXFLAGS="${commonflags}"
 export MAKEFLAGS="-j${cpucount}"
 
 
-### Functions
+### Functions #################################################################
 
 log() {
     # Print a message prettily.
@@ -116,7 +118,6 @@ die() {
 }
 
 
-# Check for required tools
 requiredTools()
 {
     for tool in "$@" ; do
@@ -195,7 +196,7 @@ rm -rf "$dirchroot" | war "$?" "Failed to delete" "$dirchroot"
 }
 
 
-### Main script body
+### Main script body ##########################################################
 
 log "Kiss Linux bootstrap version:" "${scriptversion}"
 log "Checking for required tools"

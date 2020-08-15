@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+### Variables #################################################################
+
 ### Set version variables
 
 export scriptversion="1.2"
@@ -49,12 +51,8 @@ export CFLAGS="${commonflags}"
 export CXXFLAGS="${commonflags}"
 export MAKEFLAGS="-j${cpucount}"
 
-### Set download variables
 
-export urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
-
-
-### Functions
+### Functions #################################################################
 
 log() {
 
@@ -72,7 +70,6 @@ die() {
 }
 
 
-# Check for required tools
 requiredTools()
 {
     for tool in "$@" ; do
@@ -168,21 +165,17 @@ else
 
 fi
 
-### Build/install gpg
 
-#for pkg in gnupg1; do
-#    log "Building" "$pkg"
-#    echo | kiss build $pkg
-#    log "Installing" "$pkg"
-#    kiss install $pkg
-#done
+### Main script body ##########################################################
 
-log "Building" "gnupg1"
-echo | kiss build gnupg1
+### Build/install gnugpg
 
-log "Installing" "gnupg1"
-echo | kiss install gnupg1
-
+for pkg in gnupg1; do
+    log "Building" "$pkg"
+    echo | kiss build $pkg
+    log "Installing" "$pkg"
+    echo | kiss install $pkg
+done
 
 ### Add/configure kiss repo key
 
@@ -200,6 +193,9 @@ git config merge.verifySignatures true
 log "Updating Kiss"
 
 echo | kiss update
+
+log "Updating Kiss"
+
 echo | kiss update
 
 
@@ -219,7 +215,7 @@ for pkg in e2fsprogs xfsprogs dosfstools util-linux eudev dhcpcd libelf ncurses 
     log "Building" "$pkg"
     echo | kiss build $pkg
     log "Installing" "$pkg"
-    kiss install $pkg
+    echo | kiss install $pkg
 done
 
 
@@ -227,17 +223,12 @@ if [ "$IsVM" != "true" ]
 
 then
 
-    #for pkg in wpa_supplicant; do
-    #    log "Building" "$pkg"
-    #    echo | kiss build $pkg
-    #    log "Installing" "$pkg"
-    #done
-
-    log "Building" "wpa_supplicant"
-    echo | kiss build wpa_supplicant
-
-    log "Installing" "wpa_supplicant"
-    echo | kiss install wpa_supplicant
+    for pkg in wpa_supplicant; do
+        log "Building" "$pkg"
+        echo | kiss build $pkg
+        log "Installing" "$pkg"
+        echo | kiss install $pkg
+    done
 
 fi
 
@@ -250,7 +241,7 @@ tar xvf "/usr/src/kernel/linux-${kernelversion}.tar.xz" --directory /usr/src/ker
 
 log "Removing" "linux-${kernelversion}.tar.xz"
 
-rm -rf "/usr/src/kernel/linux-${kernelversion}.tar.xz"
+rm -rf "/usr/src/kernel/linux-${kernelversion}.tar.xz" || war "$?" "Failed to remove /usr/src/kernel/linux-${kernelversion}.tar.xz"
 
 
 ### Create firmware directories
@@ -285,7 +276,7 @@ then
 
     log "Copying linux firmware files" "/usr/lib/firmware"
 
-    #cp -R ./path/to/driver /usr/lib/firmware
+    cp -R /usr/src/firmware/* /usr/lib/firmware/ || war "$?" "Failed to copy firmware files to /usr/lib/firmware"
 
 fi
 
@@ -356,11 +347,12 @@ for pkg in grub efibootmgr; do
     log "Building" "$pkg"
     echo | kiss build $pkg
     log "Installing" "$pkg"
+    echo | kiss install $pkg
 done
 
 log "Creating directory" "/boot/efi"
 
-mkdir /boot/efi
+mkdir /boot/efi || die "$?" "Failed to create /boot/efi directory"
 
 ### Mount efi partition to /boot/efi
 
@@ -385,32 +377,12 @@ grub-mkconfig -o /boot/grub/grub.cfg || die "$?" "Failed generate grub.cfg"
 
 ### Build/install baseinit
 
-#for pkg in baseinit; do
-#    log "Building" "$pkg"
-#    echo | kiss build $pkg
-#    log "Installing" "$pkg"
-#done
-
-log "Building" "baseinit"
-echo | kiss build baseinit
-
-log "Installing" "baseinit"
-echo | kiss install baseinit
-
-
-### Configure fstab
-
-#rm -rf /etc/fstab
-
-#wget -P /etc "$urlinstallfiles/fstab"
-
-
-### Configure default profile
-
-#rm -rf /etc/profile
-
-#wget -P /etc "$urlinstallfiles/profile"
-
+for pkg in baseinit; do
+    log "Building" "$pkg"
+    echo | kiss build $pkg
+    log "Installing" "$pkg"
+    echo | kiss install $pkg
+done
 
 ### Configure timezone to EST
 
