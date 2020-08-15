@@ -177,12 +177,11 @@ fi
 #    kiss install $pkg
 #done
 
-log "Building" "gpg"
-echo | kiss build gpg
+log "Building" "gnupg1"
+echo | kiss build gnupg1
 
-log "Installing" "gpg"
-echo | kiss install gpg
-
+log "Installing" "gnupg1"
+echo | kiss install gnupg1
 
 
 ### Add/configure kiss repo key
@@ -210,7 +209,7 @@ log "Rebuilding base apps"
 
 #echo | kiss build "$(ls /var/db/kiss/installed)"
 
-cd /var/db/kiss/installed && kiss build *
+cd /var/db/kiss/installed && echo | kiss build *
 
 
 ### Build/Install base apps
@@ -324,10 +323,7 @@ make olddefconfig || die "$?" "Failed kernel config preperation"
 
 log "Compiling the kernel"
 
-readonly makekernel=$(make -j "$(nproc)")
-
-$makekernel || die "$?" "Failed kernel compilation"
-
+make -j "$(nproc)"
 
 ### Install kernel modules
 
