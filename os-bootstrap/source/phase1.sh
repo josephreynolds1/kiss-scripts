@@ -174,9 +174,9 @@ fi
 ### Build/install gpg
 
 for pkg in gnupg1; do
-    #log "Building" "$pkg"
+    log "Building" "$pkg"
     echo | kiss build $pkg
-    #log "Installing" "$pkg"
+    log "Installing" "$pkg"
 done
 
 
@@ -211,9 +211,9 @@ echo | kiss build "$(ls /var/db/kiss/installed)"
 log "Building/Install" "gpg"
 
 for pkg in e2fsprogs dosfstools util-linux eudev dhcpcd libelf ncurses perl tzdata acpid openssh sudo; do
-    #log "Building" "$pkg"
+    log "Building" "$pkg"
     echo | kiss build $pkg
-    #log "Installing" "$pkg"
+    log "Installing" "$pkg"
     kiss install $pkg
 done
 
@@ -223,9 +223,9 @@ if [ "$IsVM" != "true" ]
 then
 
     for pkg in wpa_supplicant; do
-        #log "Building" "$pkg"
+        log "Building" "$pkg"
         echo | kiss build $pkg
-        #log "Installing" "$pkg"
+        log "Installing" "$pkg"
     done
 
 fi
@@ -300,9 +300,7 @@ cd "/usr/src/kernel/linux-${kernelversion}"
 
 log "Prepare linux kernel configuration"
 
-make olddefconfig
-
-# || die "$?" "Failed kernel config preperation"
+make olddefconfig || die "$?" "Failed kernel config preperation"
 
 
 ### Apply kernel patch
@@ -314,27 +312,21 @@ make olddefconfig
 
 log "Compiling the kernel"
 
-make -j "$(nproc)"
-
-# || die "$?" "Failed kernel compilation"
+make -j "$(nproc)" || die "$?" "Failed kernel compilation"
 
 
 ### Install kernel modules
 
 log "Install kernel modules"
 
-make INSTALL_MOD_STRIP=1 modules_install
-
-#|| die "$?" "Failed to install kernel modules"
+make INSTALL_MOD_STRIP=1 modules_install || die "$?" "Failed to install kernel modules"
 
 
 ### Install kernel to /boot
 
 log "Installing kernel" "/boot"
 
-make install
-
-#|| die "$?" "Failed kernel install"
+make install || die "$?" "Failed kernel install"
 
 
 ### Rename kernel files

@@ -467,7 +467,7 @@ tar xvf "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" -C "$dirchroot" -
 
 cp "${dirsource}/phase1.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase1.sh to ${dirchroot}/root"
 cp "${dirsource}/phase2.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase2.sh to ${dirchroot}/root"
-cp "${dirsource}/profile" "$dirchroot/etc/profile" || die "$?" "Failed to copy default profile to ${dirchroot}/etc"
+#cp "${dirsource}/profile" "$dirchroot/etc/profile" || die "$?" "Failed to copy default profile to ${dirchroot}/etc"
 cp "${dirsource}/scriptvars.sh" "$dirchroot/root/" || die "$?" "Failed to copy scriptvars to ${dirchroot}/root"
 cp "${dirsource}/fstab" "$dirchroot/etc/" || die "$?" "Failed to copy fstab to ${dirchroot}/etc"
 
