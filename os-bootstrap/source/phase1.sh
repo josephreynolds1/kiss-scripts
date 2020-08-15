@@ -170,11 +170,19 @@ fi
 
 ### Build/install gpg
 
-for pkg in gnupg1; do
-    log "Building" "$pkg"
-    echo | kiss build $pkg
-    log "Installing" "$pkg"
-done
+#for pkg in gnupg1; do
+#    log "Building" "$pkg"
+#    echo | kiss build $pkg
+#    log "Installing" "$pkg"
+#    kiss install $pkg
+#done
+
+log "Building" "gpg"
+echo | kiss build gpg
+
+log "Installing" "gpg"
+echo | kiss install gpg
+
 
 
 ### Add/configure kiss repo key
@@ -220,11 +228,17 @@ if [ "$IsVM" != "true" ]
 
 then
 
-    for pkg in wpa_supplicant; do
-        log "Building" "$pkg"
-        echo | kiss build $pkg
-        log "Installing" "$pkg"
-    done
+    #for pkg in wpa_supplicant; do
+    #    log "Building" "$pkg"
+    #    echo | kiss build $pkg
+    #    log "Installing" "$pkg"
+    #done
+
+    log "Building" "wpa_supplicant"
+    echo | kiss build wpa_supplicant
+
+    log "Installing" "wpa_supplicant"
+    echo | kiss install wpa_supplicant
 
 fi
 
@@ -310,7 +324,9 @@ make olddefconfig || die "$?" "Failed kernel config preperation"
 
 log "Compiling the kernel"
 
-make -j "$(nproc)" || die "$?" "Failed kernel compilation"
+readonly makekernel=$(make -j "$(nproc)")
+
+$makekernel || die "$?" "Failed kernel compilation"
 
 
 ### Install kernel modules
@@ -373,11 +389,17 @@ grub-mkconfig -o /boot/grub/grub.cfg || die "$?" "Failed generate grub.cfg"
 
 ### Build/install baseinit
 
-for pkg in baseinit; do
-    log "Building" "$pkg"
-    echo | kiss build $pkg
-    log "Installing" "$pkg"
-done
+#for pkg in baseinit; do
+#    log "Building" "$pkg"
+#    echo | kiss build $pkg
+#    log "Installing" "$pkg"
+#done
+
+log "Building" "baseinit"
+echo | kiss build baseinit
+
+log "Installing" "baseinit"
+echo | kiss install baseinit
 
 
 ### Configure fstab
