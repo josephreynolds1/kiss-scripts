@@ -92,8 +92,6 @@ export CXXFLAGS="${commonflags}"
 export MAKEFLAGS="-j${cpucount}"
 
 
-
-
 ### Functions
 
 log() {
@@ -355,11 +353,6 @@ log "Downloading kiss-chroot key"
 echo ""
 downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot-${kisschrootversion}.tar.xz.asc" || die "$?" "Failed to download" "${kisschrooturl}/kiss-chroot-${kisschrootversion}.tar.xz.asc"
 
-log "Downloading Kiss chroot script"
-echo ""
-downloadSource "$dirdownload" "${urlkisschrootscript}/kiss-chroot" || die "$?" "Failed to download" "${urlkisschrootscript}/kiss-chroot"
-chmod +x "$dirdownload/kiss-chroot"
-
 log "Validating Kiss chroot files"
 echo ""
 sha256sum -c < "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.sha256"
@@ -423,9 +416,9 @@ log "Generate fstab configuration"
 
 # <file system> <dir> <type> <options> <dump> <pass>
 
-/dev/"${diskchoice}"1	/boot/efi	vfat	0 2
-/dev/"${diskchoice}"2	none	swap	sw	0 0
-/dev/"${diskchoice}"3	/	"${filesystem}"	noatime	0 1
+/dev/${diskchoice}1	/boot/efi	vfat	0 2
+/dev/${diskchoice}2	none	swap	sw	0 0
+/dev/${diskchoice}3	/	${filesystem}	noatime	0 1
 
 EOM
 
@@ -485,6 +478,5 @@ cp "${dirsource}/download/linux-${kernelversion}.tar.xz" "$dirchroot/usr/src/ker
 
 log "Executing kiss-chroot script"
 
-"$dirdownload/kiss-chroot" "$dirchroot" || die "$?" "Failed execution of kiss-chroot script"
-
+"$dirchroot/bin/kiss-chroot" "$dirchroot" || die "$?" "Failed execution of kiss-chroot script"
 
