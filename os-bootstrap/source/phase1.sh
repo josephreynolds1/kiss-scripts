@@ -19,7 +19,7 @@ fi
 
 if [ -z "$domain" ]; then
 
-    export domain=""
+    export domain="localdomain"
 
 fi
 
@@ -44,8 +44,8 @@ export lclr='\033[m'
 
 ### Set compile flag variables
 
-export commonflags="-O3 -pipe -march=native"
-export cpucount="nproc"
+#export commonflags="-O3 -pipe -march=native"
+#export cpucount="nproc"
 
 export CFLAGS="${commonflags}"
 export CXXFLAGS="${commonflags}"
@@ -391,6 +391,19 @@ log "Setting timezone" "$timezone"
 rm -rf /etc/localtime
 ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 
+### Set hostname
+
+log "Setting hostname:" "${hostname}.${domain}"
+
+echo "${hostname}.${domain}" > /etc/hostname || war "$?" "Failed to set hostname"
+
+log "Updating /etc/hosts file with hostname/domain" "${hostname}.${domain}"
+
+/bin/cat <<EOM >"/etc/hosts"
+127.0.0.1  ${hostname}.localdomain  ${hostname}
+::1        ${hostname}.localdomain  ${hostname}  ip6-localhost
+
+EOM
 
 ### Enable default services
 
@@ -420,6 +433,17 @@ touch /etc/profile.d/kiss_path.sh
 echo 'export KISS_PATH=/var/db/kiss/repo/core:/var/db/kiss/repo/extra:/var/db/kiss/repo/xorg:/usr/src/repo/community:/usr/src/repo/community/community' > /etc/profile.d/kiss_path.sh
 
 chmod +x /etc/profile.d/kiss_path.sh
+
+### Set compiler options /etc/profile
+
+log "Adding compiler options to /etc/profile"
+
+/bin/cat <<EOM >> "/etc/profile"
+
+export CFLAGS="${commonflags}"
+export CXXFLAGS="${commonflags}"
+export MAKEFLAGS="-j${cpucount}"
+EOM
 
 
 ### Set root password

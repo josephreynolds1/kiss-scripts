@@ -403,6 +403,8 @@ export filesystem="${filesystem}"
 export diskchoice="${diskchoice}"
 export kernelversion="${kernelversion}"
 export firmwareversion="${firmwareversion}"
+export commonflags="${commonflags}"
+export cpucount="${cpucount}"
 EOM
 
 

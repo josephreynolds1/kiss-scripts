@@ -250,6 +250,8 @@ done
 ### Install firefox-bin
 
 for pkg in firefox-bin; do
+    log "Building" "$pkg"
+    echo | kiss build $pkg
     log "Installing" "$pkg"
     echo | kiss install $pkg
 done
