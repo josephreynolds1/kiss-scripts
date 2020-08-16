@@ -400,8 +400,8 @@ echo "${hostname}.${domain}" > /etc/hostname || war "$?" "Failed to set hostname
 log "Updating /etc/hosts file with hostname/domain" "${hostname}.${domain}"
 
 /bin/cat <<EOM >"/etc/hosts"
-127.0.0.1  ${hostname}.localdomain  ${hostname}
-::1        ${hostname}.localdomain  ${hostname}  ip6-localhost
+127.0.0.1  ${hostname}.S{domain}  ${hostname}
+::1        ${hostname}.S{domain}  ${hostname}  ip6-localhost
 
 EOM
 
