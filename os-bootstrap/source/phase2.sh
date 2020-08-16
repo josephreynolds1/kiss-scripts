@@ -229,7 +229,7 @@ done
 
 ### Build/Install window manager
 
-for pkg in dwm dmenu slock rxvt-unicode; do
+for pkg in dwm dmenu slock st rxvt-unicode; do
     log "Building" "$pkg"
     echo | kiss build $pkg
     log "Installing" "$pkg"
