@@ -84,7 +84,7 @@ fi
 
 ### Set compile flag variables
 
-export commonflags="-O3 -pipe -march=native"
+export commonflags="-O2 -pipe -march=native"
 
 cpucount="$(nproc)"
 export cpucount

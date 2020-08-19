@@ -9,6 +9,8 @@ export kissversion="1.1"
 
 source ./scriptvars.sh
 
+export urlfirmware="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
+
 
 if [ -z "$hostname" ]; then
 
@@ -276,7 +278,7 @@ then
 
     log "Copying linux firmware files" "/usr/lib/firmware"
 
-    cp -R /usr/src/firmware/* /usr/lib/firmware/ || war "$?" "Failed to copy firmware files to /usr/lib/firmware"
+    cp -R /usr/src/firmware/linux-firmware/* /usr/lib/firmware/ || war "$?" "Failed to copy firmware files to /usr/lib/firmware"
 
 fi
 
@@ -400,8 +402,8 @@ echo "${hostname}.${domain}" > /etc/hostname || war "$?" "Failed to set hostname
 log "Updating /etc/hosts file with hostname/domain" "${hostname}.${domain}"
 
 /bin/cat <<EOM >"/etc/hosts"
-127.0.0.1  ${hostname}.S{domain}  ${hostname}
-::1        ${hostname}.S{domain}  ${hostname}  ip6-localhost
+127.0.0.1  ${hostname}.${domain}  ${hostname}
+::1        ${hostname}.${domain}  ${hostname}  ip6-localhost
 
 EOM
 
