@@ -116,4 +116,17 @@ else
 
 fi
 
+### Add default user
+
+adduser -k /etc/skel user || die "$?" "Failed to add default user"
+
+
+### Add default user to groups
+
+addgroup user video || war "$?" "Failed to add default user to the following group" "video"
+addgroup user audio || war "$?" "Failed to add default user to the following group" "audio"
+addgroup user input || war "$?" "Failed to add default user to the following group" "input"
+addgroup user wheel || war "$?" "Failed to add default user to the following group" "wheel"
+
+
 export KISS_PROMPT=1
