@@ -18,7 +18,7 @@ export rootpw="" # set root password if blank you will be prompted
 export timezone="EST"
 export filesystem="xfs" # set root filesystem xfs,ext4,btrfs
 export diskchoice=""
-export dirchroot="/mnt/kiss"
+export dirchroot="/mnt"
 export kernelversion=""
 export firmwareversion="20200421"
 
