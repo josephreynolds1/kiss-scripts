@@ -78,6 +78,8 @@ log "Updating Kiss"
 
 ### Build/Install xorg and desktop applications
 
+log "Installing Xorg and Base Desktop Applications"
+
     kiss b alsa-utils && kiss i alsa-utils
     kiss b xorg-server && kiss i xorg-server
     kiss b xf86-input-libinput && kiss i xf86-input-libinput
@@ -88,6 +90,7 @@ log "Updating Kiss"
     kiss b xrandr && kiss i xrandr
     kiss b xinit && kiss i xinit
     kiss b hsetroot && kiss i hsetroot
+    kiss b htop && kiss i htop
     kiss b fontconfig && kiss i fontconfig
     kiss b liberation-fonts && kiss i liberation-fonts
     kiss b terminus-font && kiss i terminus-font
@@ -98,6 +101,7 @@ log "Updating Kiss"
     kiss b slock && kiss i slock
     kiss b sxiv && kiss i sxiv
     kiss b dwm && kiss i dwm
+    kiss b bash && kiss i bash
 
 
 ### Build/Install xorg drivers

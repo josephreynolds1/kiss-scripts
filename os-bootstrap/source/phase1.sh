@@ -105,11 +105,11 @@ cd /var/db/kiss/installed && kiss build *
   kiss b xfsprogs && kiss i xfsprogs
   kiss b util-linux && kiss i util-linux
   kiss b eudev && kiss i eudev
-  #kiss b openssh && kiss i openssh
+  kiss b openssh && kiss i openssh
   kiss b dhcpcd && kiss i dhcpcd
   kiss b tzdata && kiss i tzdata
-  #kiss b acpid && kiss i acpid
-  #kiss b sudo && kiss i sudo
+  kiss b acpid && kiss i acpid
+  kiss b sudo && kiss i sudo
 
   if [ "$IsVM" != "true" ]
 
@@ -239,19 +239,19 @@ kiss b baseinit && kiss i baseinit
 
 ### Enable services
 
-ln -s /etc/sv/dhcpcd /var/service
-#ln -s /etc/sv/acpid /var/service
-ln -s /etc/sv/syslogd /var/service
-#ln -s /etc/sv/sshd /var/service
-ln -s /etc/sv/udevd /var/service
+ln -s /etc/sv/dhcpcd /var/service || war "$?" "Failed to install service"
+ln -s /etc/sv/acpid /var/service || war "$?" "Failed to install service"
+ln -s /etc/sv/syslogd /var/service || war "$?" "Failed to install service"
+ln -s /etc/sv/sshd /var/service || war "$?" "Failed to install service"
+ln -s /etc/sv/udevd /var/service || war "$?" "Failed to install service"
 
 
 ### Configure timezone to EST
 
   log "Setting timezone" "$timezone"
 
-  rm -rf /etc/localtime
-  ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
+  rm -rf /etc/localtime || war "$?" "Failed to remove existing localtime configuration"
+  ln -s /usr/share/zoneinfo/America/New_York /etc/localtime || war "$?" "Failed to configure localtime"
 
 
 ### Set hostname and hosts file
