@@ -122,6 +122,8 @@ fi
 
 ### Add default user
 
+mkdir -p /etc/skel || war "$?" "Failed to create /etc/skel directory"
+
 adduser -k /etc/skel user || die "$?" "Failed to add default user"
 
 

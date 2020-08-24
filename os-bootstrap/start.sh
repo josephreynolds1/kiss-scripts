@@ -437,22 +437,64 @@ if [ "$answer" != "${answer#[Nn]}" ] ;then
     exit 0
 fi
 
+
+
+    case $1 in
+        *.bz2)      bzip2 -d  ;;
+        *.lzma)     lzma -dc  ;;
+        *.lz)       lzip -dc  ;;
+
+        *.tar)      cat       ;;
+        *.tgz|*.gz) gzip -d   ;;
+        *.xz|*.txz) xz -dcT 0 ;;
+        *.zst)      zstd -dc  ;;
+    esac < "$1"
+
+
+
 log "Creating partions on:" "/dev/${diskchoice}"
 
-sfdisk "/dev/${diskchoice}" < "$dirsource/$sfdiskfile" || die "$?" "Failed to partition /dev/${diskchoice}"
+  sfdisk "/dev/${diskchoice}" < "$dirsource/$sfdiskfile" || die "$?" "Failed to partition /dev/${diskchoice}"
 
 log "Formating partions on:" "/dev/${diskchoice}"
 
-mkfs.fat -F32 "/dev/${diskchoice}1" || die "$?" "Failed to format boot partition:" "/dev/${diskchoice}1"
-mkswap "/dev/${diskchoice}2" || die "$?" "Failed to create swap partition:" "/dev/${diskchoice}2"
-"mkfs.${filesystem}" -f "/dev/${diskchoice}3" || die "$?" "Failed to format root partition with $filesystem:" "/dev/${diskchoice}3"
+log "Formating boot partion on:" "/dev/${diskchoice}1"
+
+log "Formating partition with vfat filesystem"
+
+  mkfs.fat -F32 "/dev/${diskchoice}1" || die "$?" "Failed to format boot partition:" "/dev/${diskchoice}1"
+
+log "Preparing swap partition on:" "/dev/${diskchoice}2"
+
+  mkswap "/dev/${diskchoice}2" || die "$?" "Failed to create swap partition:" "/dev/${diskchoice}2"
+
+log "Formating root partition on:" "/dev/${diskchoice}3"
+
+    case "$filesystem" in
+        btrfs)
+            log "Formating partition with btrfs filesystem"
+		        mkfs.btrfs -f "/dev/${diskchoice}3" || die "$?" "Failed to format root partition with $filesystem:" "/dev/${diskchoice}3"
+		    ;;
+	      ext4)
+	          log "Formating partition with ext4 filesystem"
+		        mkfs.ext4 "/dev/${diskchoice}3" || die "$?" "Failed to format root partition with $filesystem:" "/dev/${diskchoice}3"
+		    ;;
+	      xfs)
+	          log "Formating partition with xfs filesystem"
+		        mkfs.xfs -f "/dev/${diskchoice}3" || die "$?" "Failed to format root partition with $filesystem:" "/dev/${diskchoice}3"
+		    ;;
+	      *)
+		        echo "Sorry, I don't understand"
+		    ;;
+    esac
+
 
 log "Enabling swap space on:" "/dev/${diskchoice}2"
 
-swapon "/dev/${diskchoice}2" || die "$?" "Failed to enable swap"
+  swapon "/dev/${diskchoice}2" || die "$?" "Failed to enable swap"
 
-mkdir "$dirchroot"
-mount "/dev/${diskchoice}3" "$dirchroot" || die "$?" "Failed to mount root partition /dev/${diskchoice}3 on $dirchroot"
+  mkdir "$dirchroot"
+  mount "/dev/${diskchoice}3" "$dirchroot" || die "$?" "Failed to mount root partition /dev/${diskchoice}3 on $dirchroot"
 
 
 echo
@@ -466,7 +508,7 @@ fi
 
 log "Extracting root filesystem to ${dirchroot}"
 
-tar xvf "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" -C "$dirchroot" --strip-components 1 || die "$?" "Failed to extract kiss-chroot to $dirchroot"
+  tar xvf "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" -C "$dirchroot" --strip-components 1 || die "$?" "Failed to extract kiss-chroot to $dirchroot"
 
 cp "${dirsource}/phase1.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase1.sh to ${dirchroot}/root"
 cp "${dirsource}/phase2.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase2.sh to ${dirchroot}/root"
