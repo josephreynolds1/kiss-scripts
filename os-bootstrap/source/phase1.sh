@@ -84,6 +84,22 @@ else
 
 fi
 
+appValidation()
+{
+    for app in "$@" ; do
+
+        if  kiss s "${app}" | grep 'installed' > /dev/null 2>&1; then
+
+            log "$app" "Good"
+
+        else
+
+            war "$app" "Missing"
+
+        fi
+    done
+}
+
 
 ### Main script body ##########################################################
 
@@ -305,6 +321,12 @@ chmod +x /etc/profile.d/kiss_path.sh
   log "Setting root password"
 
   echo "root:${rootpw}" | chpasswd
+
+### Validating phase1 app installation
+
+  log "Validating phase1 app installation"
+
+  appValidation gnupg1 e2fsprogs dosfstools xfsprogs util-linux eudev openssh dhcpcd tzdata acpid sudo libelf ncurses  grub efibootmgr baseinit
 
 #exit && cd
 
