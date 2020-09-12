@@ -191,7 +191,7 @@ cleanchroot() {
 umount -fV "$dirchroot" || war "$?" "Failed to unmount" "$dirchroot"
 swapoff -v "/dev/${diskchoice}2" || war "$?" "Failed to turn off swap space" "/dev/${diskchoice}2"
 
-rm -rf "$dirchroot" | war "$?" "Failed to delete" "$dirchroot"
+rm -rf "$dirchroot" || war "$?" "Failed to delete" "$dirchroot"
 
 }
 

@@ -67,6 +67,22 @@ else
 
 fi
 
+appValidation()
+{
+    for app in "$@" ; do
+
+        if  kiss s "${app}" | grep 'installed' > /dev/null 2>&1; then
+
+            log "$app" "Good"
+
+        else
+
+            war "$app" "Missing"
+
+        fi
+    done
+}
+
 
 ### Main script body ##########################################################
 
@@ -136,3 +152,9 @@ addgroup user wheel || war "$?" "Failed to add default user to the following gro
 
 
 export KISS_PROMPT=1
+
+### Validating phase1 app installation
+
+  log "Validating phase1 app installation"
+
+  appValidation alsa-utils xorg-server xf86-input-libinput xauth xclip xset xrandr xinit hsetroot htop fontconfig liberation-fonts terminus-font imagemagick firefox-bin dmenu dwm st slock sxiv bash
