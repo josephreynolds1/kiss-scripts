@@ -145,8 +145,10 @@ echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
 cd /var/db/kiss/repo
 git config merge.verifySignatures true
 
-kiss update || die "$?" "Failed to update system"
-kiss update || die "$?" "Failed to update system"
+log "Performing Kiss update"
+
+kiss update
+kiss update
 
 cd /var/db/kiss/installed && kiss build * || die "$?" "Failed rebuilding base packages"
 
