@@ -520,22 +520,8 @@ cp "${dirsource}/config" "$dirchroot/usr/src/kernel/" || die "$?" "Failed to cop
 cp "${dirsource}/download/linux-${kernelversion}.tar.xz" "$dirchroot/usr/src/kernel/" || die "$?" "Failed to copy kernel source to ${dirchroot}/usr/src/kernel"
 
 echo ""
-log "Add KISS repo's to /etc/profile"
-
-/bin/cat <<EOM >>"${dirchroot}/etc/profile"
-
-export KISS_PATH=''
-KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/games
-KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/web
-KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/core
-KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/extra
-KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/xorg
-KISS_PATH=$KISS_PATH:/var/kiss/repos/community/community
-
-EOM
-
-echo ""
 log "Executing kiss-chroot script"
 
 "$dirchroot/bin/kiss-chroot" "$dirchroot" || die "$?" "Failed execution of kiss-chroot script"
+
 

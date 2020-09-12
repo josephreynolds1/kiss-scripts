@@ -105,22 +105,39 @@ appValidation()
 
 log "Adding Kiss repo's"
 
-mkdir -p /var/kiss/repos
-mkdir -p /var/kiss/repos/personal/games
-mkdir -p /var/kiss/repos/personal/web
+echo ""
+log "Add KISS repo's to /etc/profile"
 
-cd /var/kiss/repos
+/bin/cat <<EOM >>"${dirchroot}/etc/profile"
+
+export KISS_PATH=''
+KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/games
+KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/web
+KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/core
+KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/extra
+KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/xorg
+KISS_PATH=$KISS_PATH:/var/kiss/repos/community/community
+
+EOM
+
+log "Creating kiss repo folder structure"
+
+mkdir -p /var/kiss/repos || die "$?" "Failed to create directory" "/var/kiss/repos"
+mkdir -p /var/kiss/repos/personal/games || die "$?" "Failed to create directory" "/var/kiss/repos/personal/games"
+mkdir -p /var/kiss/repos/personal/web || die "$?" "Failed to create directory" "/var/kiss/repos/personal/web"
+
+cd /var/kiss/repos || die "$?" "Failed to change directory to kiss repos"
 
 log "Cloning base repo" "https://github.com/kisslinux/repo"
 
-git clone https://github.com/kisslinux/repo
+git clone https://github.com/kisslinux/repo || die "$?" "Failed to clone kiss base repo" "https://github.com/kisslinux/repo"
 
 log "Cloning community repo" "https://github.com/kisslinux/community"
 
-git clone https://github.com/kisslinux/community
+git clone https://github.com/kisslinux/community || die "$?" "Failed to clone kiss community repo" "https://github.com/kisslinux/community"
 
 
-kiss b gnupg1 && kiss i gnupg1
+kiss b gnupg1 && kiss i gnupg1 || die "$?" "Failed to install package"
 
 gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
 echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
@@ -128,32 +145,32 @@ echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
 cd /var/db/kiss/repo
 git config merge.verifySignatures true
 
-kiss update
-kiss update
+kiss update || die "$?" "Failed to update system"
+kiss update || die "$?" "Failed to update system"
 
-cd /var/db/kiss/installed && kiss build *
+cd /var/db/kiss/installed && kiss build * || die "$?" "Failed rebuilding base packages"
 
-  kiss b e2fsprogs && kiss i e2fsprogs
-  kiss b dosfstools && kiss i dosfstools
-  kiss b xfsprogs && kiss i xfsprogs
-  kiss b util-linux && kiss i util-linux
-  kiss b eudev && kiss i eudev
-  kiss b openssh && kiss i openssh
-  kiss b dhcpcd && kiss i dhcpcd
-  kiss b tzdata && kiss i tzdata
-  kiss b acpid && kiss i acpid
-  kiss b sudo && kiss i sudo
+  kiss b e2fsprogs && kiss i e2fsprogs || die "$?" "Failed to install package"
+  kiss b dosfstools && kiss i dosfstools || die "$?" "Failed to install package"
+  kiss b xfsprogs && kiss i xfsprogs || die "$?" "Failed to install package"
+  kiss b util-linux && kiss i util-linux || die "$?" "Failed to install package"
+  kiss b eudev && kiss i eudev || die "$?" "Failed to install package"
+  kiss b openssh && kiss i openssh || die "$?" "Failed to install package"
+  kiss b dhcpcd && kiss i dhcpcd || die "$?" "Failed to install package"
+  kiss b tzdata && kiss i tzdata || die "$?" "Failed to install package"
+  kiss b acpid && kiss i acpid || die "$?" "Failed to install package"
+  kiss b sudo && kiss i sudo || die "$?" "Failed to install package"
 
   if [ "$IsVM" != "true" ]
 
   then
-       kiss b wpa_supplicant &&  kiss i wpa_supplicant
+       kiss b wpa_supplicant &&  kiss i wpa_supplicant || die "$?" "Failed to install package"
   fi
 
 
-kiss b libelf && kiss i libelf
-kiss b ncurses && kiss i ncurses
-kiss b perl && kiss i perl
+kiss b libelf && kiss i libelf || die "$?" "Failed to install package"
+kiss b ncurses && kiss i ncurses || die "$?" "Failed to install package"
+kiss b perl && kiss i perl || die "$?" "Failed to install package"
 
 if [ "$IsVM" != "true" ]
 
@@ -161,13 +178,13 @@ then
 
     log "Creating linux firmware directory" "/usr/lib/firmware"
 
-    mkdir -p /usr/lib/firmware
+    mkdir -p /usr/lib/firmware || war "$?" "Failed to create directory" "/usr/lib/firmware"
 
     ### Clone linux-firmware git repository
 
       log "Cloning linux-firmware git repository"
 
-      cd && git clone "$urlfirmware"
+      cd && git clone "$urlfirmware" || war "$?" "Failed to clone kiss base repo" "$urlfirmware"
 
       log "Copying linux firmware files" "/usr/lib/firmware"
 
@@ -196,7 +213,7 @@ rm -rf "/usr/src/kernel/linux-${kernelversion}.tar.xz" || war "$?" "Failed to re
 
 ### Change to kernel source directory
 
-  cd "/usr/src/kernel/linux-${kernelversion}"
+  cd "/usr/src/kernel/linux-${kernelversion}" || die "$?" "Failed to change to directory" "/usr/src/kernel/linux-${kernelversion}"
 
 
 ### Prepare linux kernel configuration
@@ -239,8 +256,8 @@ rm -rf "/usr/src/kernel/linux-${kernelversion}.tar.xz" || war "$?" "Failed to re
 
 ### Install grub and efibootmgr
 
-  kiss b grub && kiss i grub
-  kiss b efibootmgr && kiss i efibootmgr
+  kiss b grub && kiss i grub || die "$?" "Failed to install package"
+  kiss b efibootmgr && kiss i efibootmgr || die "$?" "Failed to install package"
 
   log "Creating directory" "/boot/efi"
 
@@ -267,7 +284,7 @@ rm -rf "/usr/src/kernel/linux-${kernelversion}.tar.xz" || war "$?" "Failed to re
 
 ### Install baseinit
 
-kiss b baseinit && kiss i baseinit
+kiss b baseinit && kiss i baseinit || die "$?" "Failed to install package"
 
 
 ### Enable services
@@ -314,30 +331,12 @@ export MAKEFLAGS="-j${cpucount}"
 EOM
 
 
-### Configure KISS community repository
-
-log "Adding Kiss community repository"
-
-mkdir /usr/src/repo
-
-cd /usr/src/repo
-
-git clone https://github.com/kisslinux/community.git
-
-rm /etc/profile.d/kiss_path.sh
-
-touch /etc/profile.d/kiss_path.sh
-
-echo 'export KISS_PATH=/var/db/kiss/repo/core:/var/db/kiss/repo/extra:/var/db/kiss/repo/xorg:/usr/src/repo/community/community' > /etc/profile.d/kiss_path.sh
-
-chmod +x /etc/profile.d/kiss_path.sh
-
-
 ### Set root password
 
   log "Setting root password"
 
-  echo "root:${rootpw}" | chpasswd
+  echo "root:${rootpw}" | chpasswd || war "$?" "Failed to set root password"
+
 
 ### Validating phase1 app installation
 
