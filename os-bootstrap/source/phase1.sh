@@ -103,6 +103,23 @@ appValidation()
 
 ### Main script body ##########################################################
 
+log "Adding Kiss repo's"
+
+mkdir -p /var/kiss/repos
+mkdir -p /var/kiss/repos/personal/games
+mkdir -p /var/kiss/repos/personal/web
+
+cd /var/kiss/repos
+
+log "Cloning base repo" "https://github.com/kisslinux/repo"
+
+git clone https://github.com/kisslinux/repo
+
+log "Cloning community repo" "https://github.com/kisslinux/community"
+
+git clone https://github.com/kisslinux/community
+
+
 kiss b gnupg1 && kiss i gnupg1
 
 gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
