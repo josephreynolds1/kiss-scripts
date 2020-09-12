@@ -124,7 +124,7 @@ git clone https://github.com/kisslinux/community || die "$?" "Failed to clone ki
 echo ""
 log "Add KISS repo's to /etc/profile"
 
-/bin/cat <<EOM >>"${dirchroot}/etc/profile"
+/bin/cat <<"EOM" >>"/etc/profile"
 
 export KISS_PATH=''
 KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/games
