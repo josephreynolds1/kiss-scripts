@@ -360,32 +360,32 @@ sha256sum -c < "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.sha256"
 gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E || die "$?" "Failed to get gnupg key for kiss-chroot-${kisschrootversion}.tar.xz"
 gpg --verify "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.asc" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" || die "$?" "Failed to verify signature of" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz"
 
-echo ""
-log "Exporting default profile"
+#echo ""
+#log "Exporting default profile"
 
-/bin/cat <<EOM >"$dirsource/profile"
+#/bin/cat <<EOM >"$dirsource/profile"
 # /etc/profile
 #
 # System wide environment and startup programs.
 
 # Set default path (/usr/sbin:/sbin:/bin included for non-KISS Linux chroots).
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin
+#export PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin
 
 # Set default umask.
-umask 022
+#umask 022
 
 # Load profiles from /etc/profile.d
-for file in /etc/profile.d/*.sh; do
-    [ -r "$file" ] && . "$file"
-done
+#for file in /etc/profile.d/*.sh; do
+#    [ -r "$file" ] && . "$file"
+#done
 
-unset file
+#unset file
 
 # Build Settings
-export CFLAGS="${commonflags}"
-export CXXFLAGS="${commonflags}"
-export MAKEFLAGS="-j${cpucount}"
-EOM
+#export CFLAGS="${commonflags}"
+#export CXXFLAGS="${commonflags}"
+#export MAKEFLAGS="-j${cpucount}"
+#EOM
 
 #Set variables file for chroot environment
 
@@ -522,7 +522,7 @@ cp "${dirsource}/download/linux-${kernelversion}.tar.xz" "$dirchroot/usr/src/ker
 echo ""
 log "Add KISS repo's to /etc/profile"
 
-/bin/cat <<EOM >" ${dirchroot}/etc/profile"
+/bin/cat <<EOM >>"${dirchroot}/etc/profile"
 
 export KISS_PATH=''
 KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/games
