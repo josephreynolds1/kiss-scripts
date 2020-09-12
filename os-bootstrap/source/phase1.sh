@@ -105,21 +105,6 @@ appValidation()
 
 log "Adding Kiss repo's"
 
-echo ""
-log "Add KISS repo's to /etc/profile"
-
-/bin/cat <<EOM >>"${dirchroot}/etc/profile"
-
-export KISS_PATH=''
-KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/games
-KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/web
-KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/core
-KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/extra
-KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/xorg
-KISS_PATH=$KISS_PATH:/var/kiss/repos/community/community
-
-EOM
-
 log "Creating kiss repo folder structure"
 
 mkdir -p /var/kiss/repos || die "$?" "Failed to create directory" "/var/kiss/repos"
@@ -136,13 +121,31 @@ log "Cloning community repo" "https://github.com/kisslinux/community"
 
 git clone https://github.com/kisslinux/community || die "$?" "Failed to clone kiss community repo" "https://github.com/kisslinux/community"
 
+echo ""
+log "Add KISS repo's to /etc/profile"
+
+/bin/cat <<EOM >>"${dirchroot}/etc/profile"
+
+export KISS_PATH=''
+KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/games
+KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/web
+KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/core
+KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/extra
+KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/xorg
+KISS_PATH=$KISS_PATH:/var/kiss/repos/community/community
+
+EOM
+
+. /etc/profile
 
 kiss b gnupg1 && kiss i gnupg1 || die "$?" "Failed to install package"
+
+log "Enable Kiss base repo key signing"
 
 gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
 echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
 
-cd /var/db/kiss/repo
+cd /var/kiss/repos/repo
 git config merge.verifySignatures true
 
 log "Performing Kiss update"
