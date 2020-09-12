@@ -525,12 +525,12 @@ log "Add KISS repo's to /etc/profile"
 /bin/cat <<EOM >" ${dirchroot}/etc/profile"
 
 export KISS_PATH=''
-KISS_PATH=$KISS_PATH:$HOME/repos/personal/games
-KISS_PATH=$KISS_PATH:$HOME/repos/personal/web
-KISS_PATH=$KISS_PATH:$HOME/repos/repo/core
-KISS_PATH=$KISS_PATH:$HOME/repos/repo/extra
-KISS_PATH=$KISS_PATH:$HOME/repos/repo/xorg
-KISS_PATH=$KISS_PATH:$HOME/repos/community/community
+KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/games
+KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/web
+KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/core
+KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/extra
+KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/xorg
+KISS_PATH=$KISS_PATH:/var/kiss/repos/community/community
 
 EOM
 
