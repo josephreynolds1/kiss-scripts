@@ -2,18 +2,31 @@
 
 ### Variables #################################################################
 
+### Set version variables
+
+export scriptversion="1.2"
+
+
+### Disable Kiss prompts
+
 export KISS_PROMPT=0
 
+
+### Source scriptvars
+
 source ./scriptvars.sh
+
 
 ### Set download variables
 
 export urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
 
+
 ### Set time variable for logging
 
 time=$(date '+%Y-%m-%d-%H:%M')
 export time
+
 
 ### Set color variables
 
@@ -24,8 +37,8 @@ export lclr='\033[m'
 
 ### Functions #################################################################
 
-log() {
 
+log() {
     printf '%b%s %b%s%b %s\n' \
         "$lcol" "${3:-->}" "${lclr}${2:+$lcol2}" "$1" "$lclr" "$2" >&2
 }
@@ -36,8 +49,27 @@ war() {
 
 die() {
     log "$1" "$2" "${3:-ERROR}"
+    getScriptDuration
+    export KISS_PROMPT=1
     exit 1
 }
+
+
+getScriptDuration() {
+
+  scriptend=$(date +%s)
+  scriptendfriendly=$(date)
+
+  duration=$((scriptend - scriptstart))
+
+  output=$(printf '%dh:%dm:%ds\n' $((duration/3600)) $((duration%3600/60)) $((duration%60)))
+
+  log "Script start time:" "$scriptstartfriendly"
+  log "Script end time:" "$scriptendfriendly"
+  log "Script execution duration:" "$output"
+
+}
+
 
 ### Virtual Machine check
 
@@ -86,9 +118,15 @@ appValidation()
 
 ### Main script body ##########################################################
 
+scriptstart=$(date +%s)
+scriptstartfriendly=$(date)
+
+log "Kiss Linux bootstrap phase2 version:" "${scriptversion}"
+log "$scriptstartfriendly"
+
 ### Update Kiss
 
-log "Updating Kiss"
+log "Performing Kiss update"
 
     kiss update
 
@@ -96,28 +134,28 @@ log "Updating Kiss"
 
 log "Installing Xorg and Base Desktop Applications"
 
-    kiss b alsa-utils && kiss i alsa-utils
-    kiss b xorg-server && kiss i xorg-server
-    kiss b xf86-input-libinput && kiss i xf86-input-libinput
-    kiss b xauth && kiss i xauth
-    kiss b xclip && kiss i xclip
-    kiss b xset && kiss i xset
-    kiss b xsetroot && kiss i xsetroot
-    kiss b xrandr && kiss i xrandr
-    kiss b xinit && kiss i xinit
-    kiss b hsetroot && kiss i hsetroot
-    kiss b htop && kiss i htop
-    kiss b fontconfig && kiss i fontconfig
-    kiss b liberation-fonts && kiss i liberation-fonts
-    kiss b terminus-font && kiss i terminus-font
-    kiss b imagemagick && kiss i imagemagick
-    kiss b firefox-bin && kiss i firefox-bin
-    kiss b dmenu && kiss i dmenu
-    kiss b st && kiss i st
-    kiss b slock && kiss i slock
-    kiss b sxiv && kiss i sxiv
-    kiss b dwm && kiss i dwm
-    kiss b bash && kiss i bash
+    kiss b alsa-utils && kiss i alsa-utils || die "$?" "Failed to install package"
+    kiss b xorg-server && kiss i xorg-server || die "$?" "Failed to install package"
+    kiss b xf86-input-libinput && kiss i xf86-input-libinput || die "$?" "Failed to install package"
+    kiss b xauth && kiss i xauth || die "$?" "Failed to install package"
+    kiss b xclip && kiss i xclip || die "$?" "Failed to install package"
+    kiss b xset && kiss i xset || die "$?" "Failed to install package"
+    kiss b xsetroot && kiss i xsetroot || die "$?" "Failed to install package"
+    kiss b xrandr && kiss i xrandr || die "$?" "Failed to install package"
+    kiss b xinit && kiss i xinit || die "$?" "Failed to install package"
+    kiss b hsetroot && kiss i hsetroot || die "$?" "Failed to install package"
+    kiss b htop && kiss i htop || die "$?" "Failed to install package"
+    kiss b fontconfig && kiss i fontconfig || die "$?" "Failed to install package"
+    kiss b liberation-fonts && kiss i liberation-fonts || die "$?" "Failed to install package"
+    kiss b terminus-font && kiss i terminus-font || die "$?" "Failed to install package"
+    kiss b imagemagick && kiss i imagemagick || die "$?" "Failed to install package"
+    kiss b firefox-bin && kiss i firefox-bin || die "$?" "Failed to install package"
+    kiss b dmenu && kiss i dmenu || die "$?" "Failed to install package"
+    kiss b st && kiss i st || die "$?" "Failed to install package"
+    kiss b slock && kiss i slock || die "$?" "Failed to install package"
+    kiss b sxiv && kiss i sxiv || die "$?" "Failed to install package"
+    kiss b dwm && kiss i dwm || die "$?" "Failed to install package"
+    kiss b bash && kiss i bash || die "$?" "Failed to install package"
 
 
 ### Build/Install xorg drivers
@@ -126,13 +164,13 @@ if [ "$IsVM" != "true" ]
 
 then
 
-    kiss b xf86-video-amdgpu && kiss i xf86-video-amdgpu
-    kiss b xf86-video-nouveau && kiss i xf86-video-nouveau
-    kiss b xf86-video-vesa && kiss i xf86-video-vesa
+    kiss b xf86-video-amdgpu && kiss i xf86-video-amdgpu || die "$?" "Failed to install package"
+    kiss b xf86-video-nouveau && kiss i xf86-video-nouveau || die "$?" "Failed to install package"
+    kiss b xf86-video-vesa && kiss i xf86-video-vesa || die "$?" "Failed to install package"
 
 else
 
-    kiss b xf86-video-vesa && kiss i xf86-video-vesa
+    kiss b xf86-video-vesa && kiss i xf86-video-vesa || die "$?" "Failed to install package"
 
 fi
 
@@ -158,3 +196,9 @@ export KISS_PROMPT=1
   log "Validating phase1 app installation"
 
   appValidation alsa-utils xorg-server xf86-input-libinput xauth xclip xset xrandr xinit hsetroot htop fontconfig liberation-fonts terminus-font imagemagick firefox-bin dmenu dwm st slock sxiv bash
+
+
+### Generate script duration
+
+  getScriptDuration
+

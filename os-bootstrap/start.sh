@@ -96,14 +96,8 @@ export MAKEFLAGS="-j${cpucount}"
 
 ### Functions #################################################################
 
+
 log() {
-    # Print a message prettily.
-    #
-    # All messages are printed to stderr to allow the user to hide build
-    # output which is the only thing printed to stdout.
-    #
-    # The l<word> variables contain escape sequence which are defined
-    # when '$KISS_COLOR' is equal to '1'.
     printf '%b%s %b%s%b %s\n' \
         "$lcol" "${3:-->}" "${lclr}${2:+$lcol2}" "$1" "$lclr" "$2" >&2
 }
@@ -114,7 +108,24 @@ war() {
 
 die() {
     log "$1" "$2" "${3:-ERROR}"
+    getScriptDuration
     exit 1
+}
+
+
+getScriptDuration() {
+
+  scriptend=$(date +%s)
+  scriptendfriendly=$(date)
+
+  duration=$((scriptend - scriptstart))
+
+  output=$(printf '%dh:%dm:%ds\n' $((duration/3600)) $((duration%3600/60)) $((duration%60)))
+
+  log "Script start time:" "$scriptstartfriendly"
+  log "Script end time:" "$scriptendfriendly"
+  log "Script execution duration:" "$output"
+
 }
 
 
@@ -198,7 +209,11 @@ rm -rf "$dirchroot" || war "$?" "Failed to delete" "$dirchroot"
 
 ### Main script body ##########################################################
 
+scriptstart=$(date +%s)
+scriptstartfriendly=$(date)
+
 log "Kiss Linux bootstrap version:" "${scriptversion}"
+log "$scriptstartfriendly"
 log "Checking for required tools"
 
 echo ""
@@ -519,9 +534,16 @@ mkdir -p "$dirchroot/usr/src/kernel" || die "$?" "Failed to create kernel source
 cp "${dirsource}/config" "$dirchroot/usr/src/kernel/" || die "$?" "Failed to copy kernel config to ${dirchroot}/usr/src/kernel"
 cp "${dirsource}/download/linux-${kernelversion}.tar.xz" "$dirchroot/usr/src/kernel/" || die "$?" "Failed to copy kernel source to ${dirchroot}/usr/src/kernel"
 
+
+### Generate script duration
+
+  getScriptDuration
+
+
 echo ""
 log "Executing kiss-chroot script"
 
 "$dirchroot/bin/kiss-chroot" "$dirchroot" || die "$?" "Failed execution of kiss-chroot script"
+
 
 

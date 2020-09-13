@@ -1,10 +1,25 @@
 #!/bin/sh -e
 
+clear
+
 ### Variables #################################################################
+
+### Set version variables
+
+export scriptversion="1.2"
+
+
+### Disable Kiss prompts
 
 export KISS_PROMPT=0
 
+
+### Source scriptvars
+
 source ./scriptvars.sh
+
+
+### Set hostname variable
 
 if [ -z "$hostname" ]; then
 
@@ -41,8 +56,8 @@ export MAKEFLAGS="-j${cpucount}"
 
 ### Functions #################################################################
 
-log() {
 
+log() {
     printf '%b%s %b%s%b %s\n' \
         "$lcol" "${3:-->}" "${lclr}${2:+$lcol2}" "$1" "$lclr" "$2" >&2
 }
@@ -53,8 +68,27 @@ war() {
 
 die() {
     log "$1" "$2" "${3:-ERROR}"
+    getScriptDuration
+    export KISS_PROMPT=1
     exit 1
 }
+
+
+getScriptDuration() {
+
+  scriptend=$(date +%s)
+  scriptendfriendly=$(date)
+
+  duration=$((scriptend - scriptstart))
+
+  output=$(printf '%dh:%dm:%ds\n' $((duration/3600)) $((duration%3600/60)) $((duration%60)))
+
+  log "Script start time:" "$scriptstartfriendly"
+  log "Script end time:" "$scriptendfriendly"
+  log "Script execution duration:" "$output"
+
+}
+
 
 ### Virtual Machine check
 
@@ -103,8 +137,13 @@ appValidation()
 
 ### Main script body ##########################################################
 
-log "Adding Kiss repo's"
+scriptstart=$(date +%s)
+scriptstartfriendly=$(date)
 
+log "Kiss Linux bootstrap phase1 version:" "${scriptversion}"
+log "$scriptstartfriendly"
+
+log "Adding Kiss repo's"
 log "Creating kiss repo folder structure"
 
 mkdir -p /var/kiss/repos || die "$?" "Failed to create directory" "/var/kiss/repos"
@@ -148,10 +187,14 @@ echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
 cd /var/kiss/repos/repo
 git config merge.verifySignatures true
 
+
 log "Performing Kiss update"
 
 kiss update
 kiss update
+
+
+log "Rebuild Kiss base packages"
 
 cd /var/db/kiss/installed && kiss build * || die "$?" "Failed rebuilding base packages"
 
@@ -165,6 +208,8 @@ cd /var/db/kiss/installed && kiss build * || die "$?" "Failed rebuilding base pa
   kiss b tzdata && kiss i tzdata || die "$?" "Failed to install package"
   kiss b acpid && kiss i acpid || die "$?" "Failed to install package"
   kiss b sudo && kiss i sudo || die "$?" "Failed to install package"
+  kiss b sudo && kiss i pfetch || die "$?" "Failed to install package"
+  kiss b sudo && kiss i htop || die "$?" "Failed to install package"
 
   if [ "$IsVM" != "true" ]
 
@@ -176,6 +221,7 @@ cd /var/db/kiss/installed && kiss build * || die "$?" "Failed rebuilding base pa
 kiss b libelf && kiss i libelf || die "$?" "Failed to install package"
 kiss b ncurses && kiss i ncurses || die "$?" "Failed to install package"
 kiss b perl && kiss i perl || die "$?" "Failed to install package"
+
 
 if [ "$IsVM" != "true" ]
 
@@ -233,6 +279,7 @@ rm -rf "/usr/src/kernel/linux-${kernelversion}.tar.xz" || war "$?" "Failed to re
   log "Compiling the kernel"
 
   make -j "$(nproc)"
+
 
 ### Install kernel modules
 
@@ -348,6 +395,11 @@ EOM
   log "Validating phase1 app installation"
 
   appValidation gnupg1 e2fsprogs dosfstools xfsprogs util-linux eudev openssh dhcpcd tzdata acpid sudo libelf ncurses  grub efibootmgr baseinit
+
+
+### Generate script duration
+
+  getScriptDuration
 
 #exit && cd
 
