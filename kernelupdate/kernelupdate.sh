@@ -1,5 +1,11 @@
 #!/bin/sh -e
 
+clear
+
+### Variables #################################################################
+
+### Set version variables
+
 scriptversion="1.0"
 
 ### Set time variable for logging
@@ -15,14 +21,8 @@ export lclr='\033[m'
 
 ### Functions
 
+
 log() {
-    # Print a message prettily.
-    #
-    # All messages are printed to stderr to allow the user to hide build
-    # output which is the only thing printed to stdout.
-    #
-    # The l<word> variables contain escape sequence which are defined
-    # when '$KISS_COLOR' is equal to '1'.
     printf '%b%s %b%s%b %s\n' \
         "$lcol" "${3:-->}" "${lclr}${2:+$lcol2}" "$1" "$lclr" "$2" >&2
 }
@@ -33,8 +33,35 @@ war() {
 
 die() {
     log "$1" "$2" "${3:-ERROR}"
+    getScriptDuration
     exit 1
 }
+
+
+getScriptDuration() {
+
+  scriptend=$(date +%s)
+  scriptendfriendly=$(date)
+
+  duration=$((scriptend - scriptstart))
+
+  output=$(printf '%dh:%dm:%ds\n' $((duration/3600)) $((duration%3600/60)) $((duration%60)))
+
+  log "Script start time:" "$scriptstartfriendly"
+  log "Script end time:" "$scriptendfriendly"
+  log "Script execution duration:" "$output"
+
+}
+
+
+### Main script body ##########################################################
+
+scriptstart=$(date +%s)
+scriptstartfriendly=$(date)
+
+log "Linux kernel upgrade version:" "${scriptversion}"
+log "Script start time:" "$scriptstartfriendly"
+
 
 ### Get current kernel version
 
@@ -111,19 +138,19 @@ else
 
         log "Downloading kernel from:" "${urlkernel}"
 
-        wget -P /usr/src/kernel/ "$urlkernel"
+        wget -P /usr/src/kernel/ "$urlkernel" || die "$?" "Failed to download kernel" "$urlkernel"
 
         ### Extract and remove downloaded kernel archive
 
-        tar xvf /usr/src/kernel/linux-"${latestkernel}".tar.xz --directory /usr/src/kernel/
+        tar xvf /usr/src/kernel/linux-"${latestkernel}".tar.xz --directory /usr/src/kernel/ || die "$?" "Failed to extract kernel" "/usr/src/kernel/${latestkernel}"
 
-        rm -rf /usr/src/kernel/linux-"${latestkernel}".tar.xz
+        rm -rf /usr/src/kernel/linux-"${latestkernel}".tar.xz || war "$?" "Failed to remove kernel" "/usr/src/kernel/linux-"${latestkernel}".tar.xz"
 
         ### Copy kernel config to source directory
 
-        cp /usr/src/kernel/config /usr/src/kernel/linux-"${latestkernel}"/.config
+        cp /usr/src/kernel/config /usr/src/kernel/linux-"${latestkernel}"/.config || war "$?" "Failed to copy kernel config"
 
-        cd /usr/src/kernel/linux-"${latestkernel}"
+        cd /usr/src/kernel/linux-"${latestkernel}" || die "$?" "Failed to change directory" "/usr/src/kernel/linux-${latestkernel}"
 
         ### Prepare config file
 
@@ -139,9 +166,10 @@ else
 
         ### Rename kernel image and map file to version
 
-        mv /boot/vmlinuz /boot/vmlinuz-"${latestkernel}"
+        mv /boot/vmlinuz /boot/vmlinuz-"${latestkernel}" || die "$?" "Failed to copy file" "/boot/vmlinuz"
 
-        mv /boot/System.map /boot/System.map-"${latestkernel}"
+        mv /boot/System.map /boot/System.map-"${latestkernel}" || die "$?" "Failed to copy file" "/boot/System.map"
+        
 
         ### Update kernelprevious/current files under /boot
 
@@ -199,3 +227,9 @@ else
     fi
 
 fi
+
+
+### Generate script duration
+
+  getScriptDuration
+

@@ -213,7 +213,7 @@ scriptstart=$(date +%s)
 scriptstartfriendly=$(date)
 
 log "Kiss Linux bootstrap version:" "${scriptversion}"
-log "$scriptstartfriendly"
+log "Script start time:" "$scriptstartfriendly"
 log "Checking for required tools"
 
 echo ""

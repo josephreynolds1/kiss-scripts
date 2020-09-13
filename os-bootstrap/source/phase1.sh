@@ -141,7 +141,7 @@ scriptstart=$(date +%s)
 scriptstartfriendly=$(date)
 
 log "Kiss Linux bootstrap phase1 version:" "${scriptversion}"
-log "$scriptstartfriendly"
+log "Script start time:" "$scriptstartfriendly"
 
 log "Adding Kiss repo's"
 log "Creating kiss repo folder structure"

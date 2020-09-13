@@ -1,5 +1,11 @@
 #!/bin/sh -e
 
+clear
+
+### Variables #################################################################
+
+### Set version variables
+
 scriptversion="1.0"
 
 ### Set time variable for logging
@@ -15,14 +21,8 @@ export lclr='\033[m'
 
 ### Functions
 
+
 log() {
-    # Print a message prettily.
-    #
-    # All messages are printed to stderr to allow the user to hide build
-    # output which is the only thing printed to stdout.
-    #
-    # The l<word> variables contain escape sequence which are defined
-    # when '$KISS_COLOR' is equal to '1'.
     printf '%b%s %b%s%b %s\n' \
         "$lcol" "${3:-->}" "${lclr}${2:+$lcol2}" "$1" "$lclr" "$2" >&2
 }
@@ -33,8 +33,34 @@ war() {
 
 die() {
     log "$1" "$2" "${3:-ERROR}"
+    getScriptDuration
     exit 1
 }
+
+
+getScriptDuration() {
+
+  scriptend=$(date +%s)
+  scriptendfriendly=$(date)
+
+  duration=$((scriptend - scriptstart))
+
+  output=$(printf '%dh:%dm:%ds\n' $((duration/3600)) $((duration%3600/60)) $((duration%60)))
+
+  log "Script start time:" "$scriptstartfriendly"
+  log "Script end time:" "$scriptendfriendly"
+  log "Script execution duration:" "$output"
+
+}
+
+
+### Main script body ##########################################################
+
+scriptstart=$(date +%s)
+scriptstartfriendly=$(date)
+
+log "Linux kernel upgrade check version:" "${scriptversion}"
+log "Script start time:" "$scriptstartfriendly"
 
 
 ### Get current kernel version
@@ -102,3 +128,8 @@ else
     echo ""
 
 fi
+
+### Generate script duration
+
+  getScriptDuration
+
