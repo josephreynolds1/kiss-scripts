@@ -208,8 +208,8 @@ cd /var/db/kiss/installed && kiss build * || die "$?" "Failed rebuilding base pa
   kiss b tzdata && kiss i tzdata || die "$?" "Failed to install package"
   kiss b acpid && kiss i acpid || die "$?" "Failed to install package"
   kiss b sudo && kiss i sudo || die "$?" "Failed to install package"
-  kiss b sudo && kiss i pfetch || die "$?" "Failed to install package"
-  kiss b sudo && kiss i htop || die "$?" "Failed to install package"
+  kiss b pfetch && kiss i pfetch || die "$?" "Failed to install package"
+  kiss b htop && kiss i htop || die "$?" "Failed to install package"
 
   if [ "$IsVM" != "true" ]
 
