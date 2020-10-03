@@ -142,6 +142,7 @@ log "Installing Xorg and Base Desktop Applications"
     kiss b xset && kiss i xset || die "$?" "Failed to install package"
     kiss b xsetroot && kiss i xsetroot || die "$?" "Failed to install package"
     kiss b xrandr && kiss i xrandr || die "$?" "Failed to install package"
+    kiss b xssstate && kiss i xssstate || die "$?" "Failed to install package"
     kiss b xinit && kiss i xinit || die "$?" "Failed to install package"
     kiss b hsetroot && kiss i hsetroot || die "$?" "Failed to install package"
     kiss b htop && kiss i htop || die "$?" "Failed to install package"
@@ -195,7 +196,7 @@ export KISS_PROMPT=1
 
   log "Validating phase1 app installation"
 
-  appValidation alsa-utils xorg-server xf86-input-libinput xauth xclip xset xrandr xinit hsetroot htop fontconfig liberation-fonts terminus-font imagemagick firefox-bin dmenu dwm st slock sxiv bash
+  appValidation alsa-utils xorg-server xf86-input-libinput xauth xclip xset xrandr xssstate xinit hsetroot htop fontconfig liberation-fonts terminus-font imagemagick firefox-bin dmenu dwm st slock sxiv bash
 
 
 ### Generate script duration
