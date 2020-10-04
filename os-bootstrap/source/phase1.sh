@@ -1,7 +1,5 @@
 #!/bin/sh -e
 
-clear
-
 ### Variables #################################################################
 
 ### Set version variables
@@ -41,11 +39,13 @@ if [ -z "$rootpw" ]; then
 
 fi
 
+
 ### Set color variables
 
 export lcol='\033[1;33m'
 export lcol2='\033[1;36m'
 export lclr='\033[m'
+
 
 ### Set compile flag variables
 
@@ -143,6 +143,9 @@ scriptstartfriendly=$(date)
 log "Kiss Linux bootstrap phase1 version:" "${scriptversion}"
 log "Script start time:" "$scriptstartfriendly"
 
+
+### Configure kiss repo's
+
 log "Adding Kiss repo's"
 log "Creating kiss repo folder structure"
 
@@ -175,7 +178,13 @@ KISS_PATH=$KISS_PATH:/var/kiss/repos/community/community
 
 EOM
 
+
+### Source updated profile
+
 . /etc/profile
+
+
+### Install gnupg for repo signing
 
 kiss b gnupg1 && kiss i gnupg1 || die "$?" "Failed to install package"
 
@@ -184,15 +193,22 @@ log "Enable Kiss base repo key signing"
 gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
 echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
 
+
+### Enable repo signing on base KISS repository
+
 cd /var/kiss/repos/repo
 git config merge.verifySignatures true
 
+
+### Update kiss repositories and installed programs
 
 log "Performing Kiss update"
 
 kiss update
 kiss update
 
+
+### Rebuild Kiss base programs
 
 log "Rebuild Kiss base packages"
 
@@ -218,10 +234,14 @@ cd /var/db/kiss/installed && kiss build * || die "$?" "Failed rebuilding base pa
   fi
 
 
+### Install kernel configuration programs
+
 kiss b libelf && kiss i libelf || die "$?" "Failed to install package"
 kiss b ncurses && kiss i ncurses || die "$?" "Failed to install package"
 kiss b perl && kiss i perl || die "$?" "Failed to install package"
 
+
+### Install linux firmware
 
 if [ "$IsVM" != "true" ]
 
@@ -315,17 +335,20 @@ rm -rf "/usr/src/kernel/linux-${kernelversion}.tar.xz" || war "$?" "Failed to re
 
   mkdir /boot/efi || die "$?" "Failed to create /boot/efi directory"
 
+
 ### Mount efi partition to /boot/efi
 
   log "Mounting efi boot partition /dev/${diskchoice}1 to /boot/efi"
 
   mount -t vfat "/dev/${diskchoice}1" /boot/efi || die "$?" "Failed to mount boot partition /dev/${diskchoice}1 on /boot/efi"
 
+
 ### Install grub for efi
 
   log "Installing grub for efi" "/boot/efi"
 
   grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Kiss || die "$?" "Grub bootloader install failed"
+
 
 ### Generate grub config
 
@@ -348,7 +371,7 @@ ln -s /etc/sv/sshd /var/service || war "$?" "Failed to install service"
 ln -s /etc/sv/udevd /var/service || war "$?" "Failed to install service"
 
 
-### Configure timezone to EST
+### Configure timezone
 
   log "Setting timezone" "$timezone"
 
@@ -390,6 +413,11 @@ EOM
   echo "root:${rootpw}" | chpasswd || war "$?" "Failed to set root password"
 
 
+### Enable Kiss prompts
+
+export KISS_PROMPT=1
+
+
 ### Validating phase1 app installation
 
   log "Validating phase1 app installation"
@@ -400,6 +428,4 @@ EOM
 ### Generate script duration
 
   getScriptDuration
-
-#exit && cd
 

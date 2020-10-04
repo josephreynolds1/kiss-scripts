@@ -4,10 +4,12 @@ clear
 
 ### Variables #################################################################
 
+
 ### Set version variables
 
 export scriptversion="1.2"
 export kissversion="1.1"
+
 
 ### User set variables
 
@@ -47,17 +49,20 @@ else
 
 fi
 
+
 ### Set time variable for logging
 
 
 time=$(date '+%Y-%m-%d-%H:%M')
 export time
 
+
 ### Set color variables
 
 export lcol='\033[1;33m'
 export lcol2='\033[1;36m'
 export lclr='\033[m'
+
 
 ### Set download variables
 
@@ -68,6 +73,7 @@ export urlinstallscripts="http://10.1.1.21/misc/kiss/${kissversion}"
 export urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
 
 export urlkernel="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${kernelversion}.tar.xz"
+
 
 ### Set firmware download url
 
@@ -239,6 +245,7 @@ else
 
 fi
 
+
 ### Choose disk to install to
 
 disksdev=$(lsblk -d -e 11,1,7 -o NAME,SIZE | awk '{if (NR!=1) {print $1}}' )
@@ -305,22 +312,8 @@ first-lba: 2048
 /dev/${diskchoice}3 : start=9439232, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
 EOM
 
-#else
 
-#/bin/cat <<EOM >"$dirsource/$sfdiskfile"
-#label: gpt
-#unit: sectors
-#first-lba: 2048
-
-#/dev/${diskchoice}1 : start=2048, size=1048576, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93b
-#/dev/${diskchoice}2 : start=1050624, size=8388608, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
-#/dev/${diskchoice}3 : start=9439232, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
-#EOM
-
-#fi
-
-
-### Summary
+### Kiss install summary
 
 echo ""
 log "Hostname:" "${hostname}"
@@ -375,34 +368,8 @@ sha256sum -c < "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.sha256"
 gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E || die "$?" "Failed to get gnupg key for kiss-chroot-${kisschrootversion}.tar.xz"
 gpg --verify "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.asc" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" || die "$?" "Failed to verify signature of" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz"
 
-#echo ""
-#log "Exporting default profile"
 
-#/bin/cat <<EOM >"$dirsource/profile"
-# /etc/profile
-#
-# System wide environment and startup programs.
-
-# Set default path (/usr/sbin:/sbin:/bin included for non-KISS Linux chroots).
-#export PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin
-
-# Set default umask.
-#umask 022
-
-# Load profiles from /etc/profile.d
-#for file in /etc/profile.d/*.sh; do
-#    [ -r "$file" ] && . "$file"
-#done
-
-#unset file
-
-# Build Settings
-#export CFLAGS="${commonflags}"
-#export CXXFLAGS="${commonflags}"
-#export MAKEFLAGS="-j${cpucount}"
-#EOM
-
-#Set variables file for chroot environment
+### Set variables file for chroot environment
 
 echo ""
 log "Set variables file for chroot environment"
@@ -423,7 +390,7 @@ export cpucount="${cpucount}"
 EOM
 
 
-#Set variables file for chroot environment
+### Set variables file for chroot environment
 
 echo ""
 log "Generate fstab configuration"
@@ -441,7 +408,7 @@ log "Generate fstab configuration"
 EOM
 
 
-### Partition/format disk and enter chroot
+### Partition/format disk and prepare chroot
 
 echo
 echo "Would you like to partition/format /dev/$diskchoice (y/n)? "
@@ -451,21 +418,6 @@ read -r answer
 if [ "$answer" != "${answer#[Nn]}" ] ;then
     exit 0
 fi
-
-
-
-    case $1 in
-        *.bz2)      bzip2 -d  ;;
-        *.lzma)     lzma -dc  ;;
-        *.lz)       lzip -dc  ;;
-
-        *.tar)      cat       ;;
-        *.tgz|*.gz) gzip -d   ;;
-        *.xz|*.txz) xz -dcT 0 ;;
-        *.zst)      zstd -dc  ;;
-    esac < "$1"
-
-
 
 log "Creating partions on:" "/dev/${diskchoice}"
 
@@ -503,7 +455,6 @@ log "Formating root partition on:" "/dev/${diskchoice}3"
 		    ;;
     esac
 
-
 log "Enabling swap space on:" "/dev/${diskchoice}2"
 
   swapon "/dev/${diskchoice}2" || die "$?" "Failed to enable swap"
@@ -540,10 +491,10 @@ cp "${dirsource}/download/linux-${kernelversion}.tar.xz" "$dirchroot/usr/src/ker
   getScriptDuration
 
 
+### Enter Kiss chroot
+
 echo ""
 log "Executing kiss-chroot script"
 
 "$dirchroot/bin/kiss-chroot" "$dirchroot" || die "$?" "Failed execution of kiss-chroot script"
-
-
 

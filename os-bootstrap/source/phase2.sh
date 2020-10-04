@@ -19,7 +19,7 @@ source ./scriptvars.sh
 
 ### Set download variables
 
-export urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
+export urlinstallfiles="http://localhost/source"
 
 
 ### Set time variable for logging
@@ -124,11 +124,13 @@ scriptstartfriendly=$(date)
 log "Kiss Linux bootstrap phase2 version:" "${scriptversion}"
 log "Script start time:" "$scriptstartfriendly"
 
+
 ### Update Kiss
 
 log "Performing Kiss update"
 
     kiss update
+
 
 ### Build/Install xorg and desktop applications
 
@@ -160,6 +162,7 @@ log "Installing Xorg and Base Desktop Applications"
     kiss b pciutils && kiss i pciutils || die "$?" "Failed to install package"
     kiss b usbutils && kiss i usbutils || die "$?" "Failed to install package"
 
+
 ### Build/Install xorg drivers
 
 if [ "$IsVM" != "true" ]
@@ -176,6 +179,7 @@ else
 
 fi
 
+
 ### Add default user
 
 mkdir -p /etc/skel || war "$?" "Failed to create /etc/skel directory"
@@ -191,7 +195,10 @@ addgroup user input || war "$?" "Failed to add default user to the following gro
 addgroup user wheel || war "$?" "Failed to add default user to the following group" "wheel"
 
 
+### Enable Kiss prompts
+
 export KISS_PROMPT=1
+
 
 ### Validating phase1 app installation
 
