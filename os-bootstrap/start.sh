@@ -69,8 +69,8 @@ export lclr='\033[m'
 export kisschrooturl="https://github.com/kisslinux/repo/releases/download/${kisschrootversion}"
 export urlkisschrootscript="https://raw.githubusercontent.com/kisslinux/kiss/master/contrib"
 
-export urlinstallscripts="http://10.1.1.21/misc/kiss/${kissversion}"
-export urlinstallfiles="http://10.1.1.21/misc/kiss/${kissversion}/source"
+export urlinstallscripts="http://host/misc/kiss/${kissversion}"
+export urlinstallfiles="http://host/misc/kiss/${kissversion}/source"
 
 export urlkernel="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${kernelversion}.tar.xz"
 

@@ -17,11 +17,6 @@ export KISS_PROMPT=0
 source ./scriptvars.sh
 
 
-### Set download variables
-
-export urlinstallfiles="http://localhost/source"
-
-
 ### Set time variable for logging
 
 time=$(date '+%Y-%m-%d-%H:%M')
