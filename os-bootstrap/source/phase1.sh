@@ -429,3 +429,8 @@ export KISS_PROMPT=1
 
   getScriptDuration
 
+
+### Update shell profile
+
+sh -l
+

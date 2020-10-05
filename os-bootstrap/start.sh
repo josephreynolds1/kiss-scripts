@@ -498,7 +498,3 @@ log "Executing kiss-chroot script"
 
 "$dirchroot/bin/kiss-chroot" "$dirchroot" || die "$?" "Failed execution of kiss-chroot script"
 
-### Reload shell
-
-sh -l
-
