@@ -147,7 +147,7 @@ log "Installing Xorg and Base Desktop Applications"
     kiss b liberation-fonts && kiss i liberation-fonts || die "$?" "Failed to install package"
     kiss b terminus-font && kiss i terminus-font || die "$?" "Failed to install package"
     kiss b imagemagick && kiss i imagemagick || die "$?" "Failed to install package"
-    kiss b firefox-bin && kiss i firefox-bin || die "$?" "Failed to install package"
+    kiss b firefox-bin && kiss i firefox || die "$?" "Failed to install package"
     kiss b dmenu && kiss i dmenu || die "$?" "Failed to install package"
     kiss b st && kiss i st || die "$?" "Failed to install package"
     kiss b slock && kiss i slock || die "$?" "Failed to install package"
@@ -199,7 +199,7 @@ export KISS_PROMPT=1
 
   log "Validating phase1 app installation"
 
-  appValidation alsa-utils xorg-server xf86-input-libinput xauth xclip xset xrandr xssstate xinit hsetroot htop fontconfig liberation-fonts terminus-font imagemagick firefox-bin dmenu dwm st slock sxiv bash pciutils usbutils
+  appValidation alsa-utils xorg-server xf86-input-libinput xauth xclip xset xrandr xssstate xinit hsetroot htop fontconfig liberation-fonts terminus-font imagemagick firefox dmenu dwm st slock sxiv bash pciutils usbutils
 
 
 ### Generate script duration

@@ -255,11 +255,11 @@ then
 
       log "Cloning linux-firmware git repository"
 
-      cd && git clone "$urlfirmware" || war "$?" "Failed to clone kiss base repo" "$urlfirmware"
+      cd /usr/src && git clone "$urlfirmware" || war "$?" "Failed to clone kiss base repo" "$urlfirmware"
 
       log "Copying linux firmware files" "/usr/lib/firmware"
 
-      cp -R linux-firmware/* /usr/lib/firmware/ /usr/lib/firmware/ || war "$?" "Failed to copy firmware files to /usr/lib/firmware"
+      cp -R linux-firmware/* /usr/lib/firmware/ || war "$?" "Failed to copy firmware files to /usr/lib/firmware"
 
 fi
 
