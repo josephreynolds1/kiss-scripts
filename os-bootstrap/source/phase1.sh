@@ -54,6 +54,11 @@ export CXXFLAGS="${commonflags}"
 export MAKEFLAGS="-j${cpucount}"
 
 
+### Set url variables
+
+export urlfirmware = "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
+
+
 ### Functions #################################################################
 
 
