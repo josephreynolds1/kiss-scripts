@@ -473,7 +473,7 @@ fi
 
 log "Extracting root filesystem to ${dirchroot}"
 
-  tar xvf "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" -C "$dirchroot" --strip-components 1 || die "$?" "Failed to extract kiss-chroot to $dirchroot"
+  tar xvf "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" -C "$dirchroot" || die "$?" "Failed to extract kiss-chroot to $dirchroot"
 
 cp "${dirsource}/phase1.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase1.sh to ${dirchroot}/root"
 cp "${dirsource}/phase2.sh" "$dirchroot/root/" || die "$?" "Failed to copy phase2.sh to ${dirchroot}/root"
