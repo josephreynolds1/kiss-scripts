@@ -13,7 +13,7 @@ export kissversion="1.1"
 
 ### User set variables
 
-export kisschrootversion="2021.3-1"
+export kisschrootversion="2021.3-2"
 export hostname="" # set hostname if blank will be set to kiss
 export domain="" # optional set domain name
 export rootpw="" # set root password if blank you will be prompted
