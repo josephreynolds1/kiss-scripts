@@ -160,13 +160,13 @@ mkdir -p /var/kiss/repos/personal/web || die "$?" "Failed to create directory" "
 
 cd /var/kiss/repos || die "$?" "Failed to change directory to kiss repos"
 
-log "Cloning base repo" "https://github.com/kisslinux/repo"
+log "Cloning base repo" "https://github.com/kiss-community/repo"
 
-git clone https://github.com/kisslinux/repo || die "$?" "Failed to clone kiss base repo" "https://github.com/kisslinux/repo"
+git clone https://github.com/kiss-community/repo || die "$?" "Failed to clone kiss base repo" "https://github.com/kisslinux/repo"
 
-log "Cloning community repo" "https://github.com/kisslinux/community"
+log "Cloning community repo" "https://github.com/kiss-community/community"
 
-git clone https://github.com/kisslinux/community || die "$?" "Failed to clone kiss community repo" "https://github.com/kisslinux/community"
+git clone https://github.com/kiss-community/community || die "$?" "Failed to clone kiss community repo" "https://github.com/kisslinux/community"
 
 echo ""
 log "Add KISS repo's to /etc/profile"
@@ -195,8 +195,8 @@ kiss b gnupg1 && kiss i gnupg1 || die "$?" "Failed to install package"
 
 log "Enable Kiss base repo key signing"
 
-gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
-echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
+gpg --keyserver keys.gnupg.net --recv-key DA4AB731D4C3F13D
+echo trusted-key DA4AB731D4C3F13D >>/root/.gnupg/gpg.conf
 
 
 ### Enable repo signing on base KISS repository
@@ -438,4 +438,3 @@ export KISS_PROMPT=1
 ### Update shell profile
 
 sh -l
-

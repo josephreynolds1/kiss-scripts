@@ -205,4 +205,3 @@ export KISS_PROMPT=1
 ### Generate script duration
 
   getScriptDuration
-
