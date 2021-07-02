@@ -4,7 +4,7 @@
 
 ### Set version variables
 
-export scriptversion="1.2"
+export scriptversion="1.3"
 
 
 ### Disable Kiss prompts
@@ -162,7 +162,7 @@ cd /var/kiss/repos || die "$?" "Failed to change directory to kiss repos"
 
 log "Cloning base repo" "https://github.com/kiss-community/repo"
 
-git clone https://github.com/kiss-community/repo || die "$?" "Failed to clone kiss base repo" "https://github.com/kisslinux/repo"
+git clone https://github.com/kisslinux/repo || die "$?" "Failed to clone kiss base repo" "https://github.com/kisslinux/repo"
 
 log "Cloning community repo" "https://github.com/kiss-community/community"
 
@@ -195,8 +195,8 @@ kiss b gnupg1 && kiss i gnupg1 || die "$?" "Failed to install package"
 
 log "Enable Kiss base repo key signing"
 
-gpg --keyserver keys.gnupg.net --recv-key DA4AB731D4C3F13D
-echo trusted-key DA4AB731D4C3F13D >>/root/.gnupg/gpg.conf
+gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
+echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
 
 
 ### Enable repo signing on base KISS repository

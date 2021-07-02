@@ -7,13 +7,13 @@ clear
 
 ### Set version variables
 
-export scriptversion="1.2"
+export scriptversion="1.3"
 export kissversion="1.1"
 
 
 ### User set variables
 
-export kisschrootversion="2021.3-2"
+export kisschrootversion="2021.7-2"
 export hostname="" # set hostname if blank will be set to kiss
 export domain="" # optional set domain name
 export rootpw="" # set root password if blank you will be prompted
@@ -65,7 +65,7 @@ export lclr='\033[m'
 
 ### Set download variables
 
-export kisschrooturl="https://github.com/kiss-community/repo/releases/download/${kisschrootversion}"
+export kisschrooturl="https://github.com/kisslinux/repo/releases/download/${kisschrootversion}"
 export urlkisschrootscript="https://raw.githubusercontent.com/kisslinux/kiss/master/contrib"
 
 export urlinstallscripts="http://host/misc/kiss/${kissversion}"
@@ -89,7 +89,7 @@ fi
 
 ### Set compile flag variables
 
-export commonflags="-O2 -pipe -march=native"
+export commonflags="-O3 -pipe -march=native"
 
 cpucount="$(nproc)"
 export cpucount
@@ -364,7 +364,7 @@ downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot-${kisschrootversion}
 log "Validating Kiss chroot files"
 echo ""
 sha256sum -c < "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.sha256"
-gpg --keyserver keys.gnupg.net --recv-key DA4AB731D4C3F13D || die "$?" "Failed to get gnupg key for kiss-chroot-${kisschrootversion}.tar.xz"
+gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E || die "$?" "Failed to get gnupg key for kiss-chroot-${kisschrootversion}.tar.xz"
 gpg --verify "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.asc" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" || die "$?" "Failed to verify signature of" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz"
 
 
