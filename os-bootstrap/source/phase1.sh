@@ -221,7 +221,7 @@ cd /var/db/kiss/installed && kiss build * || die "$?" "Failed rebuilding base pa
 
   kiss b e2fsprogs && kiss i e2fsprogs || die "$?" "Failed to install package"
   kiss b dosfstools && kiss i dosfstools || die "$?" "Failed to install package"
-  kiss b xfsprogs && kiss i xfsprogs || die "$?" "Failed to install package"
+#  kiss b xfsprogs && kiss i xfsprogs || die "$?" "Failed to install package"
   kiss b util-linux && kiss i util-linux || die "$?" "Failed to install package"
   kiss b eudev && kiss i eudev || die "$?" "Failed to install package"
   kiss b openssh && kiss i openssh || die "$?" "Failed to install package"
@@ -427,8 +427,8 @@ export KISS_PROMPT=1
 
   log "Validating phase1 app installation"
 
-  appValidation gnupg1 e2fsprogs dosfstools xfsprogs util-linux eudev openssh dhcpcd tzdata acpid sudo libelf ncurses  grub efibootmgr baseinit
-
+#  appValidation gnupg1 e2fsprogs dosfstools xfsprogs util-linux eudev openssh dhcpcd tzdata acpid sudo libelf ncurses grub efibootmgr baseinit
+  appValidation gnupg1 e2fsprogs dosfstools util-linux eudev openssh dhcpcd tzdata acpid sudo libelf ncurses grub efibootmgr baseinit
 
 ### Generate script duration
 
