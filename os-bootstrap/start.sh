@@ -363,7 +363,8 @@ downloadSource "$dirdownload" "${kisschrooturl}/kiss-chroot-${kisschrootversion}
 
 log "Validating Kiss chroot files"
 echo ""
-sha256sum -c < "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.sha256"
+
+cd "$dirdownload" && sha256sum -c < "kiss-chroot-${kisschrootversion}.tar.xz.sha256" ; cd "$OLDPWD"
 gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E || die "$?" "Failed to get gnupg key for kiss-chroot-${kisschrootversion}.tar.xz"
 gpg --verify "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.asc" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" || die "$?" "Failed to verify signature of" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz"
 
