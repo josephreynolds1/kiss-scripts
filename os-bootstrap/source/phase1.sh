@@ -195,14 +195,14 @@ kiss b gnupg1 && kiss i gnupg1 || die "$?" "Failed to install package"
 
 log "Enable Kiss base repo key signing"
 
-gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
-echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
+#gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E
+#echo trusted-key 0x46d62dd9f1de636e >>/root/.gnupg/gpg.conf
 
 
 ### Enable repo signing on base KISS repository
 
-cd /var/kiss/repos/repo
-git config merge.verifySignatures true
+#cd /var/kiss/repos/repo
+#git config merge.verifySignatures true
 
 
 ### Update kiss repositories and installed programs
