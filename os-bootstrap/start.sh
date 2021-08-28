@@ -7,13 +7,13 @@ clear
 
 ### Set version variables
 
-export scriptversion="1.3"
+export scriptversion="1.4"
 export kissversion="1.1"
 
 
 ### User set variables
 
-export kisschrootversion="2021.7-6"
+export kisschrootversion="2021.7-9"
 export hostname="" # set hostname if blank will be set to kiss
 export domain="" # optional set domain name
 export rootpw="" # set root password if blank you will be prompted
@@ -365,7 +365,7 @@ log "Validating Kiss chroot files"
 echo ""
 
 cd "$dirdownload" && sha256sum -c < "kiss-chroot-${kisschrootversion}.tar.xz.sha256" ; cd "$OLDPWD"
-#gpg --keyserver keys.gnupg.net --recv-key 46D62DD9F1DE636E || die "$?" "Failed to get gnupg key for kiss-chroot-${kisschrootversion}.tar.xz"
+gpg --keyserver keyserver.ubuntu.com --recv-key 13295DAC2CF13B5C || die "$?" "Failed to get gnupg key for kiss-chroot-${kisschrootversion}.tar.xz"
 #gpg --verify "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz.asc" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz" || die "$?" "Failed to verify signature of" "$dirdownload/kiss-chroot-${kisschrootversion}.tar.xz"
 
 
