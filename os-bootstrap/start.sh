@@ -53,8 +53,6 @@ export urlkisschrootscript="https://raw.githubusercontent.com/kisslinux/kiss/mas
 export urlinstallscripts="http://host/misc/kiss/${kissversion}"
 export urlinstallfiles="http://host/misc/kiss/${kissversion}/source"
 
-export urlkernel="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${kernelversion}.tar.xz"
-
 
 ### Set firmware download url
 
@@ -237,10 +235,14 @@ if [ -z "$kernelversion" ]; then
     kernelversion=${kernelversion##*.tar.xz\">}
 
     export kernelversion=${kernelversion%</a>}
+    
+    export urlkernel="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${kernelversion}.tar.xz"
 
 else
 
-    echo "$kernelversion is set"
+    log "$kernelversion is set"
+    
+    export urlkernel="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${kernelversion}.tar.xz"
 
 fi
 
