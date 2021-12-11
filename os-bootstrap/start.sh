@@ -24,33 +24,15 @@ export dirchroot="/mnt"
 export kernelversion=""
 export firmwareversion="20200421"
 
+
 ### Set folder variables
 
 export dirscript=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 export dirsource="${dirscript}/source"
 export dirdownload="${dirscript}/source/download"
 
-
-### Get latest kernel.org stable version
-
-if [ -z "$kernelversion" ]; then
-
-    #echo "kernelversion is not set getting latest kernel version from kernel.org"
-
-    kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
-
-    kernelversion=${kernelversion##*.tar.xz\">}
-
-    export kernelversion=${kernelversion%</a>}
-
-else
-
-    echo "$kernelversion is set"
-
-fi
-
-
-### Set time variable for logging
+ 
+ ### Set time variable for logging
 
 time=$(date '+%Y-%m-%d-%H:%M')
 export time
@@ -241,6 +223,24 @@ else
     war "ntpdate" "is not installed" "$3"
     war "Skipping setting date/time with ntpdate" "$3"
     war "Make sure date and time are correct" "$(date)" "$3"
+
+fi
+
+### Get latest kernel.org stable version
+
+if [ -z "$kernelversion" ]; then
+
+    war "kernelversion is not set getting latest kernel version from kernel.org"
+
+    kernelversion=$(wget -q --output-document - https://www.kernel.org/ | grep -A 1 "latest_link")
+
+    kernelversion=${kernelversion##*.tar.xz\">}
+
+    export kernelversion=${kernelversion%</a>}
+
+else
+
+    echo "$kernelversion is set"
 
 fi
 
