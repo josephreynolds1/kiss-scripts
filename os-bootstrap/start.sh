@@ -21,7 +21,7 @@ export timezone="EST"
 export filesystem="ext4" # set root filesystem xfs,ext4,btrfs
 export diskchoice=""
 export dirchroot="/mnt"
-export kernelversion=""
+export kernelversion="5.10.84"
 export firmwareversion="20200421"
 
 
