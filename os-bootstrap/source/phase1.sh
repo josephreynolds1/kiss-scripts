@@ -166,7 +166,7 @@ git clone https://github.com/kisslinux/repo || die "$?" "Failed to clone kiss ba
 
 log "Cloning community repo" "https://github.com/kiss-community/community"
 
-git clone https://github.com/kiss-community/community || die "$?" "Failed to clone kiss community repo" "https://github.com/kisslinux/community"
+git clone https://github.com/kiss-community/community || die "$?" "Failed to clone kiss community repo" "https://github.com/kiss-community/community"
 
 echo ""
 log "Add KISS repo's to /etc/profile"
@@ -178,7 +178,7 @@ KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/games
 KISS_PATH=$KISS_PATH:/var/kiss/repos/personal/web
 KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/core
 KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/extra
-KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/xorg
+#KISS_PATH=$KISS_PATH:/var/kiss/repos/repo/wayland
 KISS_PATH=$KISS_PATH:/var/kiss/repos/community/community
 
 EOM
